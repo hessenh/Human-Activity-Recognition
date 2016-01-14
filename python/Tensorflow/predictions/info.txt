@@ -1,0 +1,2 @@
+The prediction of each classifier when using hierarchical CNN classifiers.
+Used when visualizing the probabilities for each prediction.

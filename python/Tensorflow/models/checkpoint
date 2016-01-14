@@ -1,0 +1,2 @@
+model_checkpoint_path: "models/dynamic_900"
+all_model_checkpoint_paths: "models/dynamic_900"

@@ -1,0 +1,1 @@
+This folder contains files used to explore the CNN and its structure
