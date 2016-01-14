@@ -1,0 +1,25 @@
+
+
+
+Static: 
+6:'standing'	
+7:'sitting'	
+8:'lying'	
+10:'leaning'	
+16:'picking'	
+17:'kneeling'
+
+
+Dynamic:
+1:'walking'	
+2:'walking with transition'	
+3:'shuffling'	
+4:'stairs (ascending)'	
+5:'stairs (descending)'	
+9:'transition'	
+12:'jumping'	
+11:'undefined'	
+13:'Dynamic'	
+14:'Static'	
+15:'Shake'	
+
