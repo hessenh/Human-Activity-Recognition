@@ -109,7 +109,7 @@ class CNN_TWO_LAYERS(object):
 
   def save_model(self, model):
     saver = tf.train.Saver()
-    save_path = saver.save(self.sess, model)
+    save_path = saver.save(self.sess, model + '.ckpt')
     print("Model saved in file: %s" % save_path)
 
   @property
