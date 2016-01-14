@@ -14,7 +14,7 @@ import pandas as pd
 import numpy as np
 
 def extract_merged_axes(subject, window):
-  filepath = '../../../Prosjektoppgave/Notebook/data/'+subject+'/DATA_WINDOW/'+window+'/ORIGINAL/'
+  filepath = '../../../../Prosjektoppgave/Notebook/data/'+subject+'/DATA_WINDOW/'+window+'/ORIGINAL/'
   files =   [
   'Axivity_CHEST_Back_X.csv', 'Axivity_THIGH_Left_Y.csv', 
   'Axivity_CHEST_Back_Y.csv', 'Axivity_THIGH_Left_Z.csv', 
@@ -42,7 +42,7 @@ def extract_data(subjects, window):
   return train_data
 
 def extract_merged_labels(subject, output_size, change_labels, window):
-  filepath = '../../../Prosjektoppgave/Notebook/data/'+subject+'/DATA_WINDOW/'+window+'/ORIGINAL/Usability_LAB_All_L.csv'
+  filepath = '../../../../Prosjektoppgave/Notebook/data/'+subject+'/DATA_WINDOW/'+window+'/ORIGINAL/Usability_LAB_All_L.csv'
   
 
   df = pd.read_csv(filepath, header=None, sep='\,',engine='python')
@@ -78,7 +78,7 @@ def extract_labels(subjects, output_size, change_labels, window):
 
 
 def extract_merged_labels_and_data(subject, output_size, remove_activities, convert_activties, window):
-  filepath = '../../../Prosjektoppgave/Notebook/data/'+subject+'/DATA_WINDOW/'+window+'/ORIGINAL/'
+  filepath = '../../../../Prosjektoppgave/Notebook/data/'+subject+'/DATA_WINDOW/'+window+'/ORIGINAL/'
   files =   [
   'Axivity_CHEST_Back_X.csv', 'Axivity_THIGH_Left_Y.csv', 
   'Axivity_CHEST_Back_Y.csv', 'Axivity_THIGH_Left_Z.csv', 
@@ -90,7 +90,7 @@ def extract_merged_labels_and_data(subject, output_size, remove_activities, conv
   df_4 = pd.read_csv(filepath+files[4], header=None, sep='\,',engine='python')
   df_5 = pd.read_csv(filepath+files[5], header=None, sep='\,',engine='python')
 
-  filepath = '../../../Prosjektoppgave/Notebook/data/'+subject+'/DATA_WINDOW/1.5/ORIGINAL/Usability_LAB_All_L.csv'
+  filepath = '../../../../Prosjektoppgave/Notebook/data/'+subject+'/DATA_WINDOW/1.5/ORIGINAL/Usability_LAB_All_L.csv'
 
   df_labels = pd.read_csv(filepath, header=None, sep='\,',engine='python')
   df_labels.columns = ['labels']

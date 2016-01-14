@@ -90,7 +90,7 @@ def extract_merged_labels_and_data(subject, output_size, remove_activities, conv
   df_4 = pd.read_csv(filepath+files[4], header=None, sep='\,',engine='python')
   df_5 = pd.read_csv(filepath+files[5], header=None, sep='\,',engine='python')
 
-  filepath = '../../Prosjektoppgave/Notebook/data/'+subject+'/DATA_WINDOW/'+window+'/ORIGINAL/Usability_LAB_All_L.csv'
+  filepath = '../../../Prosjektoppgave/Notebook/data/'+subject+'/DATA_WINDOW/'+window+'/ORIGINAL/Usability_LAB_All_L.csv'
 
   df_labels = pd.read_csv(filepath, header=None, sep='\,',engine='python')
   df_labels.columns = ['labels']
