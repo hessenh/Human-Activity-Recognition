@@ -1,2 +1,2 @@
-model_checkpoint_path: "models/dynamic_900"
-all_model_checkpoint_paths: "models/dynamic_900"
+model_checkpoint_path: "models/stand_sit_900.ckpt"
+all_model_checkpoint_paths: "models/stand_sit_900.ckpt"

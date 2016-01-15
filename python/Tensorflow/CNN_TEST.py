@@ -55,4 +55,4 @@ class CNN_TEST(object):
          print np.argmax(data[1])+1, self.cnn.run_network(data)
       
 
-cnn_h = CNN_TEST('sd', 2000, True, '0.96', 576)
+cnn_h = CNN_TEST('sd', 2000, True, '1.5', 900)

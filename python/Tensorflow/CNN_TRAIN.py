@@ -42,6 +42,12 @@ class CNN_TRAIN(object):
 			keep_activities = self.VARS.CONVERTION_SHUF_STAND
 			self.config = self.VARS.get_config(input_size, len(keep_activities), iterations, 100, network_type)
 			self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, len(keep_activities), remove_activities, None, keep_activities, window)
+
+		if network_type == 'stand_sit':
+			self.config = self.VARS.get_config(input_size, 3, iterations, 100, network_type)
+			convertion = self.VARS.CONVERTION_STAND_SIT
+			print 'Creating data set'
+			self.data_set = input_data_window_large.read_data_sets(subject_set, self.VARS.len_convertion_list(convertion), convertion, None, window)	
   
 
 		self.cnn = CNN.CNN_TWO_LAYERS(self.config)
@@ -50,4 +56,4 @@ class CNN_TRAIN(object):
 		self.cnn.save_model('models/' + network_type +'_'+ str(input_size))
 
 
-cnn_h = CNN_TRAIN('dynamic', 500, '1.5', 900)
+cnn_h = CNN_TRAIN('stand_sit', 500, '1.5', 900)
