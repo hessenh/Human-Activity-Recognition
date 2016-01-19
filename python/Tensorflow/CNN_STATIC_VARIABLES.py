@@ -20,6 +20,8 @@ class CNN_STATIC_VARS(object):
 	CONVERTION_SHUF_STAND_INVERSE = {2:2,4:4, 5:5, 7:7, 8:8, 9:9, 10:10, 11:11, 12:12, 13:13, 14:14, 15:15, 16:16, 17:17}
 	RE_CONVERTION_SHUF_STAND_WALK = {1:1, 2:3, 3:6}
 
+	CONVERTION_STAND_SIT = {1:1, 2:1, 3:1, 4:1, 5:1, 6:1, 7:2, 8:2, 9:3, 10:3, 11:3, 12:1, 13:3, 14:3, 15:3, 16:3, 17:3}
+
 
 	''' Methods '''
 
@@ -40,5 +42,5 @@ class CNN_STATIC_VARS(object):
 	''' Subject set '''
 	def get_subject_set(self):
 		TRAIN_SUBJECTS = ["P03","P04","P06","P07","P08","P09","P10","P14","P15","P16","P17","P18","P19","P20","P21"]
-		TEST_SUBJECTS = ["P03"]#,"P04","P06","P07","P08","P09","P10","P14","P15","P16","P17","P18","P19","P20","P21"]
+		TEST_SUBJECTS = ["P11"]#,"P04","P06","P07","P08","P09","P10","P14","P15","P16","P17","P18","P19","P20","P21"]
 		return [TRAIN_SUBJECTS, TEST_SUBJECTS]
