@@ -49,8 +49,8 @@ transition_probability = {
 
 ''' Change observations (emission) - Normalize and divide on class dist '''
 for i in range(0,len(observations)):
-  observations[i][0] = observations[i][0]/ start_probability['DYNAMIC']
-  observations[i][1] = observations[i][1]/ start_probability['STATIC']
+  observations[i][0] = observations[i][0] / start_probability['DYNAMIC']
+  observations[i][1] = observations[i][1] / start_probability['STATIC']
   s = sum(observations[i])
   observations[i][0] = math.log(observations[i][0]/s)
   observations[i][1] = math.log(observations[i][1]/s)
@@ -59,30 +59,33 @@ states = ['DYNAMIC','STATIC']
 
 def viterbi(obs, states, start_p, trans_p):
   V = [{}]
+  path={}
   # Initialize base cases (t == 0)
   for y in range(len(states)):
     V[0][states[y]] = start_p[states[y]] + obs[0][y]
+    path[states[y]] = [states[y]]
   # Run Viterbi for t > 0
   for t in range(1, len(obs)):
     V.append({})
-
+    newPath={}
     for y in range(len(states)):
       ''' 
       V[t-1][j] - Probability of state in t-1 (time). Example V[0][Healthy] = 0.3
       trans_p[j][y] - Transition Probability of going from state to state. Example V[Healthy][Healthy] = 0.7
       emit_p[y][obs[t]] - Emition Probability of seeing state given the observation. Example emit_p[Healthy][cold] = 0.4
       '''
-      p = []
-      for j in states:
-        p.append(V[t-1][j] + trans_p[j][states[y]] + obs[t][y])
-      prob = max(p)
+      
+      (prob,state)= max((V[t-1][y0] + trans_p[y0][states[y]] + obs[t][y],y0) for y0 in states)
+
+
+      newPath[states[y]] = path[state] + [states[y]]
       V[t][states[y]] = prob
+    path = newPath
 
-  return V
+  n = len(obs) - 1
+  (prob, state) = max((V[n][y], y) for y in states)
+  return prob , path[state]
 
-import operator
-def getMax(dict):
-	return max(dict.iteritems(), key=operator.itemgetter(1))[0]
 
 def example():
     return viterbi(observations,
@@ -90,24 +93,26 @@ def example():
                    start_probability,
                    transition_probability)
 
-prob = example();
-score = 0
+prob,path = example();
 
-l = len(actual_sd)
-for i in range(0,l):
-  p =  getMax(prob[i])
-  a = np.argmax(actual_sd[i])
-  if p == 'STATIC' and a == 1:
-    score += 1
-  elif p == 'DYNAMIC' and a == 0:
-    score +=1
 
-print score*1.0 / l
+scoreViterbi=0
+scoreCNN=0
+for i in range(0,len(actual_sd)):
 
-score = 0
-for i in range(0,l):
+  if actual_sd[i][1] == 1 and path[i]=="STATIC":
+    scoreViterbi +=1
+  elif actual_sd[i][1] == 0 and path[i]=="DYNAMIC":
+    scoreViterbi +=1
+
   p = np.argmax(predictions_sd[i])
   a = np.argmax(actual_sd[i])
-  if p == a:
-    score += 1
-print score*1.0 / l
+  if p==a:
+    scoreCNN +=1
+
+
+print scoreViterbi*1.0 / len(actual_sd)
+
+print scoreCNN*1.0 / len(actual_sd)
+
+print sum(actual_sd)

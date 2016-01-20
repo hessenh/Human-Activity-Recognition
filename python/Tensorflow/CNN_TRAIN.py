@@ -56,4 +56,4 @@ class CNN_TRAIN(object):
 		self.cnn.save_model('models/' + network_type +'_'+ str(input_size))
 
 
-cnn_h = CNN_TRAIN('stand_sit', 500, '1.5', 900)
+cnn_h = CNN_TRAIN('static', 500, '1.5', 900)
