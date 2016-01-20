@@ -29,7 +29,7 @@ predictions_dynamic = df_prediction_dynamic.values
 
 
 start = 0
-end = 2399
+end = 500
 
 original = original[start:end]
 actual_sd = actual_sd[start:end]

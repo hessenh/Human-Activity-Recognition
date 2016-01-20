@@ -144,6 +144,6 @@ class CNN_H(object):
 		else:
 			return originals,actuals_sd, predictions_sd, prediction_dynamic, predictions_static
 
-cnn_h = CNN_H('0.96', 576)
+cnn_h = CNN_H('1.5', 900)
 cnn_h.initialize_networks()
 print cnn_h.run_network_probability(True)
