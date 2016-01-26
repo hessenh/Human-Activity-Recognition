@@ -166,7 +166,7 @@ def extract_data_without_activities(subjects, output_size, remove_activities, wi
 
 class DataSet(object):
 
-  def __init__(self, data, labels):
+  def __init__(self, data, labels=None):
     self._num_examples = data.shape[0]
 
     self._data = data
@@ -293,3 +293,6 @@ def read_EM_data_set(subjects_set, output_size, train_remove_activities, train_c
 
   train_data, train_labels = extract_labels_and_data(training_subjects, output_size, train_remove_activities, train_convert, window)
   test_data = extract_data_without_activities(test_subjects, len(train_remove_activities), test_remove_activties, window)
+
+  data_sets.train = DataSet(train_data, train_labels)
+  data_sets.test = DataSet(test_data)
