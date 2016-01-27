@@ -194,12 +194,20 @@ class DataSet(object):
   def epochs_completed(self):
     return self._epochs_completed
 
+  def shuffle_data_set(self):
+    perm = numpy.arange(self._num_examples)
+    numpy.random.shuffle(perm)
+    self._data = self._data[perm]
+    self._labels = self._labels[perm]
+    print('Data set is shuffled')
+
   def next_batch(self, batch_size):
     """Return the next `batch_size` examples from this data set."""
    
     start = self._index_in_epoch
     self._index_in_epoch += batch_size
     if self._index_in_epoch > self._num_examples:
+      print("Shuffle data set")
       # Finished epoch
       self._epochs_completed += 1
       # Shuffle the data
@@ -222,8 +230,25 @@ class DataSet(object):
 
     return [self._data[index]], self._labels[index]
 
+def shuffle_data(above_threshold, data_set):
 
- 
+  print('Number of training data before shuffle',len(data_set.train._data))
+  print('Number of training labels before shuffle',len(data_set.train._labels))
+  print('Number of transition data before shuffle',len(data_set.transition._data))
+  for i in range(len(above_threshold)-1,-1,-1):
+    p = above_threshold[i]
+    temp_label = np.zeros(len(data_set.train._labels[0]))
+    temp_label[p[1]] = 1.0
+    temp_data = data_set.transition._data[p[0]]
+
+    data_set.transition._data = np.delete(data_set.transition._data, p[0], axis=0)
+    data_set.train._data = np.insert(data_set.train._data, len(data_set.train._data), temp_data, axis=0)
+    data_set.train._labels = np.insert(data_set.train._labels, len(data_set.train._labels), temp_label, axis = 0)
+
+  print('Number of training data after shuffle',len(data_set.train._data))
+  print('Number of training labels after shuffle',len(data_set.train._labels))
+  print('Number of transition data after',len(data_set.transition._data))
+  return data_set
 
 def read_data_sets(subjects_set, output_size, change_labels, load_model, window):
   training_subjects = subjects_set[0]
@@ -287,12 +312,23 @@ def read_data_sets_without_activity(subjects_set, output_size, train_activities,
 
   return data_sets
 
-def read_EM_data_set(subjects_set, output_size, train_remove_activities, train_convert, test_remove_activties, window):
+def read_EM_data_set(subjects_set, output_size, train_remove_activities, train_convert, transition_remove_activties, window):
+  class DataSets(object):
+    pass
+  data_sets = DataSets()
+
   training_subjects = subjects_set[0]
+  transition_subjects = subjects_set[0]
   test_subjects = subjects_set[1]
 
   train_data, train_labels = extract_labels_and_data(training_subjects, output_size, train_remove_activities, train_convert, window)
-  test_data = extract_data_without_activities(test_subjects, len(train_remove_activities), test_remove_activties, window)
+  transition_data = extract_data_without_activities(transition_subjects, len(train_remove_activities), transition_remove_activties, window)
+
+  test_data, test_labels = extract_labels_and_data(test_subjects, output_size, train_remove_activities, train_convert, window)
 
   data_sets.train = DataSet(train_data, train_labels)
-  data_sets.test = DataSet(test_data)
+  data_sets.train.shuffle_data_set()
+  data_sets.transition = DataSet(transition_data)
+  data_sets.test = DataSet(test_data, test_labels)
+
+  return data_sets
