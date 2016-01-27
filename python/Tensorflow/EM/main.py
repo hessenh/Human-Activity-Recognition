@@ -1,43 +1,57 @@
 import input_data_window_large
 import CNN
 import CNN_STATIC_VARIABLES
-import CNN_TRAIN
+import numpy as np
 
 
 class CNN_EM(object):
-		def __init__(self, network_type, iterations, window, input_size):
+	def __init__(self, network_type, iterations, window, input_size):
 		self.VARS = CNN_STATIC_VARIABLES.CNN_STATIC_VARS()
 		subject_set = self.VARS.get_subject_set()
-		self.cnn_train = CNN_TRAIN(network_type, iterations, window, input_size)
-		self.cnn_test = CNN_TEST(network_type, iterations, True, window, input_size)
+		transition_remove_activties = {1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7, 8:8, 10:10, 11:11, 12:12, 13:13, 14:14, 15:15, 16:16, 17:17}
+		train_remove_activities = {9:9}
+		if network_type == 'sd':	
+			self.config = self.VARS.get_config(input_size, 2, iterations, 100, network_type)
+			train_convert = self.VARS.CONVERTION_STATIC_DYNAMIC
+			print 'Creating data set'
+			self.data_set = input_data_window_large.read_EM_data_set(subject_set, 2, train_remove_activities, train_convert, transition_remove_activties, window)
+		if network_type == 'original':
+			train_convert = self.VARS.CONVERTION_ORIGINAL
+			self.config = self.VARS.get_config(input_size, 17, iterations, 100, network_type)
+			print 'Creating data set'
+			self.data_set = input_data_window_large.read_EM_data_set(subject_set, 17, train_remove_activities, train_convert, transition_remove_activties, window)
+
+		continue_EM=1
+
 	
-		self.config = self.VARS.get_config(input_size, 2, iterations, 100, network_type)
-		convertion = self.VARS.CONVERTION_STATIC_DYNAMIC
-		print 'Creating data set'
-		self.data_set = read_EM_data_set(subject_set, output_size, train_remove_activities, train_convert, test_remove_activties, window):
+		#TRAIN CNN MODEL WITH DATASET.TRAIN
+		self.cnn = CNN.CNN_TWO_LAYERS(self.config)
+		self.cnn.set_data_set(self.data_set)
+		self.cnn.train_network()
+		self.cnn.save_model('models/' + network_type +'_'+ str(input_size) + '_W')
 
-		#Har et self.data_set._test
-		#Har et self.data_set._train
-		continue_EM=True
+		threshold = 0.8
+		while continue_EM < 4:
+			above_threshold = []
+			for i in range(0,len(self.data_set.transition._data)):
+				''' Get the transitions data point'''
+				data_batch = self.data_set.transition._data[i]
+				prediction = self.cnn.run_network_return_probability([[data_batch]])[0]
+				activity = np.argmax(prediction)
+				if prediction[activity] >= threshold:
+					above_threshold.append([i,activity])
 
-		while continue_EM==True:
-			
-			#TRAIN CNN MODEL WITH DATASET.TRAIN
-			self.cnn_train = CNN.CNN_TWO_LAYERS(self.config)
-			self.cnn_train.set_data_set(self.data_set_train)
-			self.cnn_train.train_network()
-			self.cnn_train.save_model('models/' + network_type +'_'+ str(input_size))
+			''' Create a new network with the new data set '''
+			self.cnn = CNN.CNN_TWO_LAYERS(self.config)
+			self.data_set = input_data_window_large.shuffle_data(above_threshold, self.data_set)
+			self.cnn.set_data_set(self.data_set)
+			self.cnn.train_network()
 
-			#TEST CNN MODEL WITH DATASET.TEST
-			self.cnn_test = CNN.CNN_TWO_LAYERS(config)
-      		
+			continue_EM+=1
+			if len(above_threshold) == 0:
+				continue_EM = 4
 
-     		self.cnn.load_model('models/' + network_type + '_' + str(input_size))
-     		print self.cnn_test.test_network()
-      		
+		self.cnn.save_model('models/' + network_type +'_'+ str(input_size) +'_EM')
 
-         	
-
-
-
+cnn_h = CNN_EM('original', 100, '1.5', 900)
 
