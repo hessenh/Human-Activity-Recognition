@@ -110,7 +110,6 @@ def extract_merged_labels_and_data(subject, output_size, remove_activities, conv
     n =  np.zeros(output_size)
     n[convert_activties.get(a)-1] = 1
     m.append(n)
-
   df_labels = pd.DataFrame(m)
 
   return df_data.as_matrix(columns=None), df_labels.values
