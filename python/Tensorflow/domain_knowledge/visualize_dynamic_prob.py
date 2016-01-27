@@ -11,12 +11,15 @@ actual_SD = '../predictions/actual_sd_prob.csv'
 PREDICTION_SD = '../predictions/prediction_sd_prob.csv'
 PREDICTION_STATIC = '../predictions/prediction_static_prob.csv'
 PREDICTION_DYNAMIC = '../predictions/prediction_dynamic_prob.csv'
+VITERBI_SD = '../predictions/viterbi_sd.csv'
+
 
 df_original = pd.read_csv(ORIGINAL, header=None, sep='\,', engine='python')
 df_actual_sd_sd = pd.read_csv(actual_SD, header=None, sep='\,', engine='python')
 df_prediction_sd = pd.read_csv(PREDICTION_SD, header=None, sep='\,', engine='python')
 df_prediction_static = pd.read_csv(PREDICTION_STATIC, header=None, sep='\,', engine='python')
 df_prediction_dynamic = pd.read_csv(PREDICTION_DYNAMIC, header=None, sep='\,', engine='python')
+df_viterbi_sd = pd.read_csv(VITERBI_SD, header=None, sep='\,', engine='python')
 
 RE_CONVERTION_STATIC = {1:6, 2:7, 3:8, 4:16, 5:17}
 RE_CONVERTION_DYNAMIC = {1:1, 2:2, 3:3, 4:4, 5:5, 6:9, 7:10, 8:11, 9:12, 10:13, 11:14, 12:15}
@@ -26,7 +29,7 @@ actual_sd = df_actual_sd_sd.values
 predictions_sd = df_prediction_sd.values
 predictions_static = df_prediction_static.values
 predictions_dynamic = df_prediction_dynamic.values
-
+viterbi_sd = df_viterbi_sd.values
 
 start = 0
 end = 500
@@ -36,6 +39,7 @@ actual_sd = actual_sd[start:end]
 predictions_sd = predictions_sd[start:end]
 predictions_static = predictions_static[start:end]
 predictions_dynamic = predictions_dynamic[start:end]
+viterbi_sd = viterbi_sd[start:end]
 
 size = len(predictions_sd)
 score_sd = np.zeros(size)
@@ -56,8 +60,8 @@ predictions_final = np.zeros(size)
 error = np.zeros(size)
 
 for i in range(0,size):
-	actual_sd[i] = actual_sd[i][0]
-	predictions_sd[i] = predictions_sd[i][0]
+	actual_sd[i] = actual_sd[i][1]
+	predictions_sd[i] = predictions_sd[i][1]
 	# STATIC VS DYNAMIC
 	# If the probability for an activity is close to 50/50 between to "sure" activities, let it be the average between them
 	#if i>0 and i<size-1 and predictions_sd[i][0] > 0.1 and predictions_sd[i][0] < 0.7:
@@ -78,6 +82,7 @@ for i in range(0,size):
 
 score = 0
 error_values = np.zeros(17)
+
 for i in range(0, end-start):
 	if original[i] == predictions_final[i]:
 		score +=1
@@ -100,40 +105,45 @@ np.savetxt('prediction.csv', predictions_final, delimiter=",")
 
 plt.figure(1)
 
-plt.subplot(711)
+plt.subplot(811)
 axes = plt.gca()
 axes.set_ylim([-0.1, 1.1])
 plt.plot(actual_sd)
 
-plt.subplot(712)
+plt.subplot(812)
 axes = plt.gca()
 axes.set_ylim([-0.1, 1.1])
 plt.plot(predictions_sd_argmax)
 plt.plot(predictions_sd)
 #plt.plot(new_prediction)
 
-plt.subplot(713)
+plt.subplot(813)
+axes = plt.gca()
+axes.set_ylim([-0.1, 1.1])
+plt.plot(viterbi_sd)
+
+plt.subplot(814)
 axes = plt.gca()
 axes.set_ylim([0, 17])
 plt.plot(original)
 
-plt.subplot(714)
+plt.subplot(815)
 axes = plt.gca()
 axes.set_ylim([0, 17])
 plt.plot(predictions_static_new, 'r--')
 plt.plot(predictions_dynamic_new,  'b--')
 plt.plot(predictions_final)
 
-plt.subplot(715)
+plt.subplot(816)
 plt.plot(error)
 
-plt.subplot(716)
+plt.subplot(817)
 axes = plt.gca()
 axes.set_ylim([-0.1, 1.1])
 plt.plot(predictions_static_prob)
 
 
-plt.subplot(717)
+plt.subplot(818)
 axes = plt.gca()
 axes.set_ylim([-0.1, 1.1])
 plt.plot(predictions_dynamic_prob)
