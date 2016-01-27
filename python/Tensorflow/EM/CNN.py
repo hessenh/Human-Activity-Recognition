@@ -42,7 +42,7 @@ class CNN_TWO_LAYERS(object):
 
     '''Placeholders for input and output'''
     self.x = tf.placeholder("float", shape=[None, self._input_size])
-    print 'x', self.x.get_shape(),'IN: None, input_size'
+    #print 'x', self.x.get_shape(),'IN: None, input_size'
     self.y_ = tf.placeholder("float", shape=[None, self._output_size])
 
     '''First convolutional layer'''
