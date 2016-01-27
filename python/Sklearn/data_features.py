@@ -54,7 +54,7 @@ def read_set_x(subject, window, length):
   return df.as_matrix(columns=None)[:length]
 
 def read_set_label(subject, window):
-  filepath = '../../../Prosjektoppgave/Notebook/data/'+subject+'/DATA_WINDOW/'+window+'/ORIGINAL/Usability_LAB_All_L.csv'
+  filepath = '../../../Prosjektoppgave/Notebook/data/'+subject+'/DATA_WINDOW/'+window+'/ORIGINAL/GoPro_LAB_All_L.csv'
  
   df = pd.read_csv(filepath, sep='\,',engine='python')
 
