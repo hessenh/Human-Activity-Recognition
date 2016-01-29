@@ -46,8 +46,11 @@ class Viterbi(object):
 
 		# Divide the values in the matrix by the length of the observation
 		for d in self.transition_probability:
+			
+			labels = self.actual_labels[:,self.states.index(d)] 
+			labelsCount = np.sum(labels)
 			for key, value in self.transition_probability[d].items():
-				self.transition_probability[d][key] = np.log(value*1.0 / (self.actual_labels_length-1))
+				self.transition_probability[d][key] = np.log(value*1.0 / labelsCount)
     	print '- Generated Transition Probability'
 
 	def generate_observation_probability(self):
@@ -55,7 +58,7 @@ class Viterbi(object):
 		for j in range(0, self.observations_length):#self.observations_length
 			# Do it for evert state
 			for i in range(len(self.states)):
-				self.emission_probability[j][i] = self.observations[j][i] / np.exp(self.start_probability[states[i]])
+				self.emission_probability[j][i] = self.observations[j][i]  / np.exp(self.start_probability[states[i]])
 		
 			s = np.sum(self.emission_probability[j])
 			for i in range(0, len(self.states)):
@@ -64,6 +67,7 @@ class Viterbi(object):
 			for i in range(0, len(self.states)):
 				self.emission_probability[j][i] = np.log(self.emission_probability[j][i])
 		print '- Generated Emission Probability'
+
 
 	def run(self):
 		for y in range(len(self.states)):
@@ -100,10 +104,21 @@ class Viterbi(object):
 
 		print 'Viterbi score:',score_vit / self.actual_labels_length
 		print 'CNN score:',score_cnn / self.actual_labels_length
+
+	def save_viterbi(self,classification):
+		path = v.generate_path()
+		viterbi = []
+		for i in range(0,len(path)):
+			viterbi.append(self.states.index(path[i]))
+			
+		np.savetxt('../Tensorflow/predictions/viterbi_' + classification + '.csv', viterbi, delimiter=",")
+
+
 		
-predictions_sd = '../Tensorflow/predictions/prediction_sd_prob.csv'
-actual_sd = '../Tensorflow/predictions/actual_sd_prob.csv'
-states = ['DYNAMIC','STATIC']
+predictions_sd = '../Tensorflow/predictions/prediction_stand_sit_prob.csv'
+actual_sd = '../Tensorflow/predictions/actual_stand_sit_prob.csv'
+states = ['STAND','SIT','OTHER']
+classification = "stand_sit"
 v = Viterbi(states)
 v.load_observations(predictions_sd)
 v.load_actual_labels(actual_sd)
@@ -113,3 +128,4 @@ v.generate_observation_probability()
 v.run()
 v.generate_path()
 v.get_accuracy()
+v.save_viterbi(classification)
