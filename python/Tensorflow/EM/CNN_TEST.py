@@ -55,6 +55,5 @@ class CNN_TEST(object):
             #print self.data_set.test.next_data_label(i)[1]
             data = self.data_set.test.next_data_label(i)
             print np.argmax(data[1])+1, self.cnn.run_network(data)
-      
-
+   
 cnn_h = CNN_TEST('original', 2000, True, '1.5', 900)
