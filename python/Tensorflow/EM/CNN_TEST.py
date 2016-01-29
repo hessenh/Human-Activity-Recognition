@@ -23,8 +23,11 @@ class CNN_TEST(object):
          convertion = self.VARS.CONVERTION_ORIGINAL
          config = self.VARS.get_config(input_size, 17, index, 100, network_type)
          print 'Creating data set'
-         self.data_set = input_data_window_large.read_data_sets(subject_set, self.VARS.len_convertion_list(convertion), convertion, None, window)
-      
+         #self.data_set = input_data_window_large.read_data_sets(subject_set, self.VARS.len_convertion_list(convertion), convertion, None, window)
+         transition_remove_activties = {1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7, 8:8, 10:10, 11:11, 12:12, 13:13, 14:14, 15:15, 16:16, 17:17}
+         train_remove_activities = {9:9}
+         self.data_set = input_data_window_large.read_EM_data_set(subject_set, 17, train_remove_activities, convertion, transition_remove_activties, window)
+
       if network_type == 'static':
          remove_activities = self.VARS.REMOVE_DYNAMIC_ACTIVITIES
          keep_activities = self.VARS.CONVERTION_STATIC
@@ -51,8 +54,9 @@ class CNN_TEST(object):
       if complete_set:
          print self.cnn.test_network()
       else:
-         data = self.data_set.test.next_data_label(index)
-         print np.argmax(data[1])+1, self.cnn.run_network(data)
-      
-
-cnn_h = CNN_TEST('sd', 2000, True, '1.5', 900)
+         for i in range(0,100):
+            #print self.data_set.test.next_data_label(i)[1]
+            data = self.data_set.test.next_data_label(i)
+            print np.argmax(data[1])+1, self.cnn.run_network(data)
+   
+cnn_h = CNN_TEST('original', 2000, True, '1.5', 900)

@@ -21,17 +21,18 @@ class CNN_EM(object):
 			print 'Creating data set'
 			self.data_set = input_data_window_large.read_EM_data_set(subject_set, 17, train_remove_activities, train_convert, transition_remove_activties, window)
 
-		continue_EM=1
 
 	
 		#TRAIN CNN MODEL WITH DATASET.TRAIN
 		self.cnn = CNN.CNN_TWO_LAYERS(self.config)
 		self.cnn.set_data_set(self.data_set)
 		self.cnn.train_network()
-		self.cnn.save_model('models/' + network_type +'_'+ str(input_size) + '_W')
+		self.cnn.save_model('models/' + network_type +'_'+ str(input_size) + '_Without_T')
 
-		threshold = 0.8
+		continue_EM=1
+		threshold = 0.9
 		while continue_EM < 4:
+			print "hei"
 			above_threshold = []
 			for i in range(0,len(self.data_set.transition._data)):
 				''' Get the transitions data point'''
@@ -41,8 +42,7 @@ class CNN_EM(object):
 				if prediction[activity] >= threshold:
 					above_threshold.append([i,activity])
 
-			''' Create a new network with the new data set '''
-			self.cnn = CNN.CNN_TWO_LAYERS(self.config)
+			''' Set the newly shuffled data set '''
 			self.data_set = input_data_window_large.shuffle_data(above_threshold, self.data_set)
 			self.cnn.set_data_set(self.data_set)
 			self.cnn.train_network()
@@ -50,8 +50,8 @@ class CNN_EM(object):
 			continue_EM+=1
 			if len(above_threshold) == 0:
 				continue_EM = 4
-
+		
 		self.cnn.save_model('models/' + network_type +'_'+ str(input_size) +'_EM')
 
-cnn_h = CNN_EM('original', 100, '1.5', 900)
+cnn_h = CNN_EM('original', 1000, '1.5', 900)
 
