@@ -29,8 +29,8 @@ class CNN_EM(object):
 		self.cnn.train_network()
 		#self.cnn.save_model('models/' + network_type +'_'+ str(input_size) + '_W')
 
-		continue_EM=3
-		threshold = 0.99
+		continue_EM=1
+		threshold = 0.9
 		while continue_EM < 4:
 			print "hei"
 			above_threshold = []
@@ -42,19 +42,16 @@ class CNN_EM(object):
 				if prediction[activity] >= threshold:
 					above_threshold.append([i,activity])
 
-			''' Create a new network with the new data set '''
-			print "New network"
-			self.cnn = CNN.CNN_TWO_LAYERS(self.config)
+			''' Set the newly shuffled data set '''
 			self.data_set = input_data_window_large.shuffle_data(above_threshold, self.data_set)
 			self.cnn.set_data_set(self.data_set)
 			self.cnn.train_network()
 
 			continue_EM+=1
-			print "stop while"
-			#if len(above_threshold) == 0:
-			#	continue_EM = 4
-		print "saving"
-		self.cnn.save_model('models/' + network_type +'_'+ str(input_size) +'_EM2')
+			if len(above_threshold) == 0:
+				continue_EM = 4
+		
+		self.cnn.save_model('models/' + network_type +'_'+ str(input_size) +'_EM')
 
-cnn_h = CNN_EM('original', 1, '1.5', 900)
+cnn_h = CNN_EM('original', 500, '1.5', 900)
 
