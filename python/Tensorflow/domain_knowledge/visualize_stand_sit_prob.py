@@ -27,7 +27,7 @@ predictions_stand_sit = df_prediction_stand_sit.values
 viterbi_stand_sit = df_viterbi_stand_sit.values
 
 
-start = 450
+start = 0
 end = 750
 
 original = original[start:end]
@@ -35,7 +35,7 @@ original = original[start:end]
 actual_stand_sit = actual_stand_sit[start:end]
 predictions_stand_sit = predictions_stand_sit[start:end]
 viterbi_stand_sit = viterbi_stand_sit[start:end]
-
+print viterbi_stand_sit
 
 size = len(predictions_stand_sit)
 score_stand_sit = np.zeros(size)
