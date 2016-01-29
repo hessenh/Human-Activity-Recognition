@@ -27,7 +27,7 @@ class CNN_EM(object):
 		self.cnn = CNN.CNN_TWO_LAYERS(self.config)
 		self.cnn.set_data_set(self.data_set)
 		self.cnn.train_network()
-		#self.cnn.save_model('models/' + network_type +'_'+ str(input_size) + '_W')
+		self.cnn.save_model('models/' + network_type +'_'+ str(input_size) + '_Without_T')
 
 		continue_EM=1
 		threshold = 0.9
@@ -53,5 +53,5 @@ class CNN_EM(object):
 		
 		self.cnn.save_model('models/' + network_type +'_'+ str(input_size) +'_EM')
 
-cnn_h = CNN_EM('original', 500, '1.5', 900)
+cnn_h = CNN_EM('original', 1000, '1.5', 900)
 

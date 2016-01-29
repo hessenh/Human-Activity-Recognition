@@ -10,7 +10,6 @@ import data_features
 def classify(classifier):
 	# Get data set
 	data = data_features.Data_Set()
-
 	# Set up classifier
 	if classifier == 'SVM':
 		clf = svm.SVC()
