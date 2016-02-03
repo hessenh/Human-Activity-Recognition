@@ -16,7 +16,7 @@ class CNN_MOD_TRAIN(object):
       self.cnn = CNN_MOD.CNN_MOD(self.config)
       self.cnn.set_data_set(self.data_set)
       self.cnn.train_network()
-      self.cnn.save_model('models/' + network_type)
+      self.cnn.save_model('models/' + network_type + '_' + str(input_size) + '_' + str(conv_f_1) + '_' + str(conv_f_2) + '_' + str(nn_1) + '_' + filter_type)
 
-cnn_h = CNN_MOD_TRAIN('sd', 3000 , '0.25', 150, 20, 40, 1024, "SAME") 
+cnn_h = CNN_MOD_TRAIN('sd', 1 , '0.25', 150, 10, 20, 1024, "SAME") 
 

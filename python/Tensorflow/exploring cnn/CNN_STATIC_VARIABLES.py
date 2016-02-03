@@ -37,7 +37,7 @@ class CNN_STATIC_VARS(object):
 		   'output_size': output_size, # Number of ouptuts
 		   'iteration_size': iterations, # Number of training iterations
 		   'batch_size': batch_size, # Number of samples in each training iteration (batch)
-		   'model_name': model_name,
+		   'model_name': model_name + '_' + str(input_size) + '_' + str(conv_f_1) + '_' + str(conv_f_2) + '_' + str(nn_1) + '_' + filter_type,
 		   'conv_f_1': conv_f_1,
 		   'conv_f_2': conv_f_2,
 		   'nn_1': nn_1,
@@ -46,6 +46,6 @@ class CNN_STATIC_VARS(object):
 
 	''' Subject set '''
 	def get_subject_set(self):
-		TRAIN_SUBJECTS = ["01A","02A","07A","08A","09A","10A","11A","12A","13A","14A","15A","16A","18A","19A","21A","22A","23A"]
-		TEST_SUBJECTS = ["03A","04A","05A"]#,"04A","05A"]#,"P04","P06","P07","P08","P09","P10","P14","P15","P16","P17","P18","P19","P20","P21"]
+		TRAIN_SUBJECTS = ["01A"]#,"02A","07A","08A","09A","10A","11A","12A","13A","14A","15A","16A","18A","19A","21A","22A","23A"]
+		TEST_SUBJECTS = ["03A"]#,"04A","05A"]#,"04A","05A"]#,"P04","P06","P07","P08","P09","P10","P14","P15","P16","P17","P18","P19","P20","P21"]
 		return [TRAIN_SUBJECTS, TEST_SUBJECTS]
