@@ -19,18 +19,10 @@ class CNN_MOD(object):
     self._batch_size = config['batch_size']
     self._model_name = config['model_name']
 
-    '''Default values'''
-    # Conv1 
-    self._w_b_c_1 = 20
-
-    FILTER_TYPE = "SAME"
-    # Conv2 
-    self._w_b_c_2 = 40
-
-    # Neural network
-    self._w_b_n_1 = 1024
-  
-    self._weight_neural_input2 = 1024
+    self._w_b_c_1 = config['conv_f_1']
+    self._w_b_c_2 = config['conv_f_2']
+    self._w_b_n_1 = config['nn_1']
+    FILTER_TYPE = config['filter_type']
 
     filter_x = 6
     filter_y = 6
@@ -154,7 +146,8 @@ class CNN_MOD(object):
       batch = self._data_set.train.next_batch(self._batch_size)
       self.sess.run(self.train_step, feed_dict={self.x: batch[0], self.y_: batch[1], self.keep_prob: 0.5})
       if i%100 == 0:
-      	print(i,self.sess.run(self.accuracy,feed_dict={self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0}))
+        print i
+      	#print(i,self.sess.run(self.accuracy,feed_dict={self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0}))
 
 
     print(self.sess.run(self.accuracy,feed_dict={
