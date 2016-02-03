@@ -31,13 +31,17 @@ class CNN_STATIC_VARS(object):
 		return len(set(convertion_list.values()))
 
 	''' Get config for CNN '''
-	def get_config(self, input_size, output_size, iterations, batch_size, model_name):
+	def get_config(self, input_size, output_size, iterations, batch_size, model_name, conv_f_1, conv_f_2, nn_1, filter_type):
 		return 	{
 		   'input_size': input_size, # Number of inputs 
 		   'output_size': output_size, # Number of ouptuts
 		   'iteration_size': iterations, # Number of training iterations
 		   'batch_size': batch_size, # Number of samples in each training iteration (batch)
-		   'model_name': model_name
+		   'model_name': model_name,
+		   'conv_f_1': conv_f_1,
+		   'conv_f_2': conv_f_2,
+		   'nn_1': nn_1,
+		   'filter_type': filter_type
 		}
 
 	''' Subject set '''
