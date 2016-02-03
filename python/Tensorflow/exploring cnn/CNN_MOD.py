@@ -104,7 +104,6 @@ class CNN_MOD(object):
     # Get last name. Path could be modles/test, so splitting on "/" and retreiving "test"
     model_name = model.split('/')
     model_name = model_name[-1]
-
     all_vars = tf.all_variables()
     model_vars = [k for k in all_vars if k.name.startswith(model_name)]
     tf.train.Saver(model_vars).restore(self.sess, model)
