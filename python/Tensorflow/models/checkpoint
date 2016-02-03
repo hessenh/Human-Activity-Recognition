@@ -1,2 +1,7 @@
+<<<<<<< HEAD
 model_checkpoint_path: "models/sd_144.ckpt"
 all_model_checkpoint_paths: "models/sd_144.ckpt"
+=======
+model_checkpoint_path: "models/walk_stairs_576.ckpt"
+all_model_checkpoint_paths: "models/walk_stairs_576.ckpt"
+>>>>>>> 61ceaef64939882b17079d3bc01120ed55013627
