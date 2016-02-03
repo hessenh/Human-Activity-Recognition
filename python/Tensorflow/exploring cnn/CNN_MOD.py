@@ -18,53 +18,64 @@ class CNN_MOD(object):
     self._iteration_size = config['iteration_size']
     self._batch_size = config['batch_size']
     self._model_name = config['model_name']
-    self._input_size_sqrt = int(self._input_size ** 0.5)
 
     '''Default values'''
     # Conv1 
-    self._w_b_c_1 = 32
+    self._w_b_c_1 = 20
 
+    FILTER_TYPE = "SAME"
     # Conv2 
-    self._w_b_c_2 = 64
+    self._w_b_c_2 = 40
 
     # Neural network
     self._w_b_n_1 = 1024
-    # eg. input_size_sqer = 576 ** 0.5 = 24. 24 / 4 = 6<<<<<<<<<<< 
-    self._dsp_2 = (self._input_size_sqrt / 4)
   
     self._weight_neural_input2 = 1024
 
-
-
+    filter_x = 6
+    filter_y = 6
+    window = self._input_size / filter_y
 
     '''Placeholders for input and output'''
     self.x = tf.placeholder("float", shape=[None, self._input_size])
-    print 'x', self.x.get_shape(),'IN: None, input_size'
+    print 'x', self.x.get_shape()
     self.y_ = tf.placeholder("float", shape=[None, self._output_size])
 
+    self.x_image = tf.reshape(self.x, [-1, filter_y, window, 1])
+    print self.x_image.get_shape(), 'X reshaped'
     '''First convolutional layer'''
-    self.W_conv1 = self.weight_variable([5, 5, 1, self._w_b_c_1], self._model_name + "W_conv1")
+    self.W_conv1 = self.weight_variable([filter_x, filter_y, 1, self._w_b_c_1], self._model_name + "W_conv1")
     self.b_conv1 = self.bias_variable([self._w_b_c_1],self._model_name + 'b_conv1')
-    self.x_image = tf.reshape(self.x, [-1, self._input_size_sqrt, self._input_size_sqrt,1])
-    self.h_conv1 = tf.nn.relu(self.conv2d(self.x_image, self.W_conv1) + self.b_conv1)
-    self.h_pool1 = self.max_pool_2x2(self.h_conv1)
+    self.h_conv1 = tf.nn.relu(self.conv2d(self.x_image, self.W_conv1, FILTER_TYPE) + self.b_conv1)
+    print self.h_conv1.get_shape(), 'Features 1'
     
     '''Second convolutional layer'''
-    self.W_conv2 = self.weight_variable([5, 5, self._w_b_c_1, self._w_b_c_2], self._model_name + 'W_conv2')
+    if FILTER_TYPE == "SAME":
+      self.W_conv2 = self.weight_variable([filter_x, filter_y, self._w_b_c_1, self._w_b_c_2], self._model_name + 'W_conv2')
+    else:
+      self.W_conv2 = self.weight_variable([1, filter_y, self._w_b_c_1, self._w_b_c_2], self._model_name + 'W_conv2')
+
     self.b_conv2 = self.bias_variable([self._w_b_c_2], self._model_name +'b_conv2')
-    self.h_conv2 = tf.nn.relu(self.conv2d(self.h_pool1, self.W_conv2) + self.b_conv2)
-    self.h_pool2 = self.max_pool_2x2(self.h_conv2)
+    self.h_conv2 = tf.nn.relu(self.conv2d(self.h_conv1, self.W_conv2, FILTER_TYPE) + self.b_conv2)
+    print self.h_conv2.get_shape(), 'Features 2'
 
     '''Densly conected layer'''
-    self.W_fc1 = self.weight_variable([self._dsp_2*self._dsp_2*self._w_b_c_2, self._w_b_n_1],self._model_name + 'W_fc1')
+    if FILTER_TYPE == "SAME":
+      self.h_flat = tf.reshape(self.h_conv2, [-1, filter_y * window * self._w_b_c_2])
+      self.W_fc1 = self.weight_variable([filter_y * window * self._w_b_c_2, self._w_b_n_1],self._model_name + 'W_fc1')
+    else:  
+      self.h_flat = tf.reshape(self.h_conv2, [-1, 1 * (window-5-5) * self._w_b_c_2])
+      self.W_fc1 = self.weight_variable([1 * (window-5-5) * self._w_b_c_2, self._w_b_n_1],self._model_name + 'W_fc1')
+    print self.h_flat.get_shape(), 'Output conv'
+    print self.W_fc1.get_shape(), 'Neural network input'
     self.b_fc1 = self.bias_variable([self._w_b_n_1], self._model_name +'b_fc1')
-    self.h_pool2_flat = tf.reshape(self.h_pool2, [-1, self._dsp_2*self._dsp_2*self._w_b_c_2])
-    self.h_fc1 = tf.nn.relu(tf.matmul(self.h_pool2_flat, self.W_fc1) + self.b_fc1)
+    self.h_fc1 = tf.nn.relu(tf.matmul(self.h_flat, self.W_fc1) + self.b_fc1)
     self.keep_prob = tf.placeholder("float")
     self.h_fc1_drop = tf.nn.dropout(self.h_fc1, self.keep_prob)
     self.W_fc2 = self.weight_variable([self._w_b_n_1, self._output_size],self._model_name + 'W_fc2')
+    print self.W_fc2.get_shape()
     self.b_fc2 = self.bias_variable([self._output_size],self._model_name + 'b_fc2')
-
+    print self.b_fc2.get_shape()
     self.y_conv = tf.nn.softmax(tf.matmul(self.h_fc1_drop, self.W_fc2) + self.b_fc2)
 
     self.cross_entropy = -tf.reduce_sum(self.y_*tf.log(tf.clip_by_value(self.y_conv,1e-10,1.0)))
@@ -84,9 +95,9 @@ class CNN_MOD(object):
 	initial = tf.constant(0.1, shape=shape)
 	return tf.Variable(initial, name = name)
 
-  def conv2d(self, x, W):
+  def conv2d(self, x, W, filter_type):
   	#print 'conv2d', x
-	return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
+	return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding=filter_type)
 
   def max_pool_2x2(self, x):
 	#print 'max_pool_2x2', x
@@ -142,8 +153,8 @@ class CNN_MOD(object):
     for i in range(self._iteration_size):
       batch = self._data_set.train.next_batch(self._batch_size)
       self.sess.run(self.train_step, feed_dict={self.x: batch[0], self.y_: batch[1], self.keep_prob: 0.5})
-      if i==50:
-      	print(self.sess.run(self.accuracy,feed_dict={self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0}))
+      if i%100 == 0:
+      	print(i,self.sess.run(self.accuracy,feed_dict={self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0}))
 
 
     print(self.sess.run(self.accuracy,feed_dict={
