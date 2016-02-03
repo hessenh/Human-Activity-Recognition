@@ -17,8 +17,9 @@ class CNN_H(object):
 		subject_set = self.VARS.get_subject_set()
 
 		print 'Creating ORIGINAL data set'
-		convertion = self.VARS.CONVERTION_ORIGINAL
-		self.data_set_ORIGINAL = input_data_window_large.read_data_sets(subject_set, self.VARS.len_convertion_list(convertion), convertion, None, window)
+		keep_activities = self.VARS.CONVERTION_ORIGINAL
+		remove_activities = { 2:2, 3:3, 6:6, 7:7, 8:8, 9:9, 10:10, 11:11, 12:12, 13:13, 14:14, 15:15, 16:16, 17:17}
+		self.data_set_ORIGINAL = input_data_window_large.read_data_sets_without_activity(subject_set, len(keep_activities), remove_activities, None, keep_activities, window)
 		
 	def initialize_networks(self):
 		''' ORIGINAL GRAPH'''
@@ -28,12 +29,14 @@ class CNN_H(object):
 		self.cnn_original.set_data_set(self.data_set_ORIGINAL)
 		#self.cnn_original.load_model('models/original')
 
-		print 'Loading stand sit network'
-		''' STATIC DYNAMIC GRAPH'''
-		config = self.VARS.get_config(self.input_size, 3, 10, 100, 'stand_sit')
-		self.cnn_stand_sit = CNN.CNN_TWO_LAYERS(config)
-		self.cnn_stand_sit.load_model('models/stand_sit_' + str(self.input_size))
-
+		''' WALK STAIRS GRAPH'''
+		print 'Loading static network'
+		config = self.VARS.get_config(self.input_size, 3, 10, 100, 'walk_stairs')
+		print "done with get config"
+		self.cnn_walk_stairs = CNN.CNN_TWO_LAYERS(config)
+		print "initialize walk stairs networks"
+		self.cnn_walk_stairs.load_model('models/walk_stairs_' + str(self.input_size))
+		print "Load walk stair model"
 		
 
 	def classify_instance(self, index):
@@ -91,39 +94,43 @@ class CNN_H(object):
 		data = self.data_set_ORIGINAL.test.next_data_label(index)
 		actual = data[1]
 		original =  np.argmax(actual) + 1
-		''' Convert actual to sd format'''
-		actual_stand_sit = np.zeros(3)
-		convert =  self.VARS.CONVERTION_STAND_SIT.get(original)
-		actual_stand_sit[convert-1] = 1
+		if original == 5:
 
-		''' STATIC DYNAMIC PREDICTION'''
-		prediction_stand_sit = self.cnn_stand_sit.run_network_return_probability(data)
+
+		''' Convert actual to sd format'''
+		actual_walk_stairs = np.zeros(3)
+		convert =  self.VARS.CONVERTION_WALK_STAIRS.get(original)
+		actual_walk_stairs[convert-1] = 1
+
+		''' DYNAMIC PREDICTION'''
+		prediction_walk_stairs = self.cnn_walk_stairs.run_network_return_probability(data)
+		
 		
 
-		return original, prediction_stand_sit, actual_stand_sit
+		return original, actual_walk_stairs, prediction_walk_stairs
 
 	def run_network_probability(self, save=None):
 		size = len(self.data_set_ORIGINAL.test.labels)
 		originals = np.zeros(size)
 
-		predictions_stand_sit = np.zeros((size,3))
-		actuals_stand_sit = np.zeros((size, 3))
+		predictions_walk_stairs = np.zeros((size,3))
+		actuals_walk_stairs = np.zeros((size, 3))
 
 		score = 0
 		for i in range(0, size):
-			original, prediction_stand_sit, actual_stand_sit = self.classify_instance_probability(i)
+			original, actual_walk_stairs, prediction_walk_stairs= self.classify_instance_probability(i)
 			originals[i] = original
-			actuals_stand_sit[i] = actual_stand_sit
-			predictions_stand_sit[i] = prediction_stand_sit
+			actuals_walk_stairs[i] = actual_walk_stairs
+			predictions_walk_stairs[i] = prediction_walk_stairs
 
 		if save:
 			print 'Saving predictions and results'
-			np.savetxt('predictions/actual_stand_sit_prob.csv', actuals_stand_sit, delimiter=",")
-			np.savetxt('predictions/prediction_stand_sit_prob.csv', predictions_stand_sit, delimiter=",")
+			np.savetxt('predictions/actual_walk_stairs_prob.csv', actuals_walk_stairs, delimiter=",")
+			np.savetxt('predictions/prediction_walk_stairs_prob.csv', predictions_walk_stairs, delimiter=",")
 			np.savetxt('predictions/original.csv', originals, delimiter=",")
 		else:
-			return originals,actuals_stand_sit, predictions_stand_sit
+			return originals, predictions_walk_stairs
 
-cnn_h = CNN_H('1.5', 900)
+cnn_h = CNN_H('0.96', 576)
 cnn_h.initialize_networks()
 print cnn_h.run_network_probability(True)

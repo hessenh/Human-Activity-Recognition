@@ -36,7 +36,13 @@ class CNN_TRAIN(object):
 			keep_activities = self.VARS.CONVERTION_DYNAMIC
 			self.config = self.VARS.get_config(input_size, len(keep_activities), iterations, 100, network_type)
 			self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, len(keep_activities), remove_activities, None, keep_activities, window)
-  
+  		
+  		if network_type == 'walk_stairs':
+			remove_activities = self.VARS.CONVERTION_WALK_STAIRS_REMOVE
+			keep_activities = self.VARS.CONVERTION_WALK_STAIRS
+			self.config = self.VARS.get_config(input_size, len(keep_activities), iterations, 100, network_type)
+			self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, len(keep_activities), remove_activities, None, keep_activities, window)
+
 		if network_type == 'shuf_stand':
 			remove_activities = self.VARS.CONVERTION_SHUF_STAND_INVERSE
 			keep_activities = self.VARS.CONVERTION_SHUF_STAND
@@ -47,6 +53,12 @@ class CNN_TRAIN(object):
 			self.config = self.VARS.get_config(input_size, 3, iterations, 100, network_type)
 			convertion = self.VARS.CONVERTION_STAND_SIT
 			print 'Creating data set'
+			self.data_set = input_data_window_large.read_data_sets(subject_set, self.VARS.len_convertion_list(convertion), convertion, None, window)
+
+		if network_type == 'lying':
+			self.config = self.VARS.get_config(input_size, 2, iterations, 100, network_type)
+			convertion = self.VARS.CONVERTION_LYING
+			print 'Creating data set'
 			self.data_set = input_data_window_large.read_data_sets(subject_set, self.VARS.len_convertion_list(convertion), convertion, None, window)	
   
 
@@ -56,4 +68,4 @@ class CNN_TRAIN(object):
 		self.cnn.save_model('models/' + network_type +'_'+ str(input_size))
 
 
-cnn_h = CNN_TRAIN('static', 500, '1.5', 900)
+cnn_h = CNN_TRAIN('walk_stairs', 500, '0.96', 576)
