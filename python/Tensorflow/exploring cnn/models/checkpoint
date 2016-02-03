@@ -1,2 +1,2 @@
-model_checkpoint_path: "models/original"
-all_model_checkpoint_paths: "models/original"
+model_checkpoint_path: "models/sd"
+all_model_checkpoint_paths: "models/sd"

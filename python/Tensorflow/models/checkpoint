@@ -1,2 +1,2 @@
-model_checkpoint_path: "models/static_900.ckpt"
-all_model_checkpoint_paths: "models/static_900.ckpt"
+model_checkpoint_path: "models/sd_144.ckpt"
+all_model_checkpoint_paths: "models/sd_144.ckpt"

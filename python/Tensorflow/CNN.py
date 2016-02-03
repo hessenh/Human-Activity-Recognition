@@ -31,6 +31,8 @@ class CNN_TWO_LAYERS(object):
     # Neural network
     self._w_b_n_1 = 1024
     # eg. input_size_sqer = 576 ** 0.5 = 24. 24 / 4 = 6<<<<<<<<<<< 
+    if self._input_size_sqrt == 12:
+      self._dsp_2 = self._input_size_sqrt / 4
     if self._input_size_sqrt == 30:
       self._dsp_2 = self._input_size_sqrt / 4 + 1
     if self._input_size_sqrt == 24:

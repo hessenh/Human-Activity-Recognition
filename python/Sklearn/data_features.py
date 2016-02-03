@@ -18,7 +18,7 @@ class Data_Set(object):
   """docstring for Data_set"""
   def __init__(self):
     VARIABLES = VAR.VARIABLES()
-    window = '1.5'
+    window = '1.0'
 
     train = read_subjects(VARIABLES.TRAIN_SUBJECTS, window)
     self.train_x = train[0]
