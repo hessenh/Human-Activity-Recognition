@@ -34,16 +34,16 @@ class CNN_SEGMENT(object):
 			data = self.data_set.test.next_data_label(i)
 			prediction = self.cnn.run_network([data[0]])
 			window_list.append(prediction)
-		
+		print 'Prediction finished'
 		window_size = input_size / 6
 		# After an activity, add a timestamp
 		segment_list = [0]
 		for i in range(0, len(window_list)-1):
 			if window_list[i] != window_list[i+1]:
-				segment_list.append((i+1)*int(window_size/2))
-		segment_list.append(len(window_list)*int(window_size/2))
+				segment_list.append((i+1)*window_size)
+		segment_list.append(len(window_list)*window_size)
 		print segment_list
 
 			
 
-CNN_SEGMENT('sd','0.76', 456, 10, 20, 1024, "SAME")
+CNN_SEGMENT('sd','0.25', 150, 20, 40, 1024, "SAME")
