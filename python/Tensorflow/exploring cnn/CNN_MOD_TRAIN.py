@@ -1,6 +1,7 @@
 import input_data_window_large
 import CNN_STATIC_VARIABLES
 import CNN_MOD
+import CNN_MOD_2
 
 
 class CNN_MOD_TRAIN(object):
@@ -18,5 +19,5 @@ class CNN_MOD_TRAIN(object):
       self.cnn.train_network()
       self.cnn.save_model('models/' + network_type + '_' + str(input_size) + '_' + str(conv_f_1) + '_' + str(conv_f_2) + '_' + str(nn_1) + '_' + filter_type)
 
-cnn_h = CNN_MOD_TRAIN('sd', 1 , '0.25', 150, 10, 20, 1024, "SAME") 
+cnn_h = CNN_MOD_TRAIN('sd', 500 , '1.0', 600, 10, 20, 200, "SAME") 
 
