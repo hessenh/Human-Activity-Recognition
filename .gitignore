@@ -1,3 +1,7 @@
+*
+!/**/
+!*.*
+
 # Pandas checkpoint files
 .ipynb_checkpoints/
 
@@ -15,6 +19,3 @@
 # Tensorflow checkpoint files
 *.ckpt
 
-*
-!/**/
-!*.*
