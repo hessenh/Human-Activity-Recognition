@@ -14,10 +14,10 @@ class CNN_MOD_TRAIN(object):
       convertion = self.VARS.CONVERTION_STATIC_DYNAMIC
       print 'Creating data set'
       self.data_set = input_data_window_large.read_data_sets(subject_set, 2, convertion, None, window)
-      self.cnn = CNN_MOD.CNN_MOD(self.config)
+      self.cnn = CNN_MOD_2.CNN_MOD(self.config)
       self.cnn.set_data_set(self.data_set)
       self.cnn.train_network()
       self.cnn.save_model('models/' + network_type + '_' + str(input_size) + '_' + str(conv_f_1) + '_' + str(conv_f_2) + '_' + str(nn_1) + '_' + filter_type)
 
-cnn_h = CNN_MOD_TRAIN('sd', 500 , '1.0', 600, 10, 20, 200, "SAME") 
+cnn_h = CNN_MOD_TRAIN('sd', 3000 , '1.0', 600, 20, 40, 200, "VALID") 
 

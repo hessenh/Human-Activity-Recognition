@@ -22,16 +22,14 @@ def classify(classifier):
 	elif classifier == 'GNB':
 		clf = GaussianNB()
 	
-	#for i in range(0,len(data.train_x)):
-	#	for j in range(0,len(data.train_x[i])):
-	#		if data.train_x[i][j] < 0.0:
-	#			print data.train_x[i][j]
-
 	# Fit the training data to the labels and create the decision trees
 	clf.fit(data.train_x,data.train_l)  
 
 	# Take the same decision trees and run it on the test data
 	#output = clf.predict(data.test_x)
+
+	print clf.predict_proba(data.test_x[0])
+	print data.test_l[0]
 
 	# Calculate score with test data
 	score = clf.score(data.test_x,data.test_l)
