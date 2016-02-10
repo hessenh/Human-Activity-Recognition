@@ -7,6 +7,7 @@ import numpy as np
 import input_data_window_large
 import pandas as pd
 import time
+import CNN_STATIC_VARIABLES
 
 class CNN_MOD(object):
   def __init__(self, config):
@@ -125,6 +126,41 @@ class CNN_MOD(object):
     return self.sess.run(self.accuracy,feed_dict={
       self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0})
 
+  def test_real_accuracy_on_network(self,test_data_set,window,window_size,change_labels):
+    static_var = CNN_STATIC_VARIABLES.CNN_STATIC_VARS();
+    subject_set = static_var.get_subject_set();
+    
+    filepath = '../../../../Prosjektoppgave/Notebook/data/'+subject_set[1][0]+'/RAW_SIGNALS/'+subject_set[1][0]+'_GoPro_LAB_All.csv'
+    df = pd.read_csv(filepath, header=None, sep='\,',engine='python')
+
+    for i in range(1,len(subject_set[1])):
+      filepath = '../../../../Prosjektoppgave/Notebook/data/'+subject_set[1][i]+'/RAW_SIGNALS/'+subject_set[1][i]+'_GoPro_LAB_All.csv'
+      df_new= pd.read_csv(filepath,header=None, sep='\,',engine='python')
+      df = pd.concat([df, df_new ], ignore_index=True)
+
+
+    # CHANGE LABELS
+    m = np.zeros(len(df))
+    for i in range(len(df)):
+      a = df.iloc[i]
+      a = change_labels[a.values[0]]
+      m[i]=a
+    
+
+    # CALCULATE ACCURACY
+    correct_instances = 0.0;
+
+    for i in range(0,len(test_data_set._data)):
+      data = [test_data_set._data[i]]
+      prediction = self.sess.run(self.y_conv, feed_dict={self.x: data ,self.keep_prob:1.0})
+      prediction = np.argmax(prediction[0])+1
+      for j in range(0,window_size):
+        if prediction == m[j + i*window_size]:
+          correct_instances+=1 
+    
+    print correct_instances/len(df)
+    
+    
   ''' Return predicted value for a given data instance '''
   def run_network(self, data):
     ''' Predict single data'''
