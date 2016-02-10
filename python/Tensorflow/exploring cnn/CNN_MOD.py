@@ -143,6 +143,7 @@ class CNN_MOD(object):
     self.sess.run(self.init_op)
     for i in range(self._iteration_size):
       batch = self._data_set.train.next_batch(self._batch_size)
+      
       self.sess.run(self.train_step, feed_dict={self.x: batch[0], self.y_: batch[1], self.keep_prob: 0.5})
       if i%100 == 0:
         print i
