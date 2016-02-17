@@ -246,6 +246,8 @@ def move_data_from_test_to_train(prediction_indices, data_set):
     # Count correct relabeling
     if np.argmax(label) == np.argmax(data_set.test._labels[prediction_indices[i][0]]):
       correct_relabeled += 1
+    #else:
+    #  print(np.argmax(label),np.argmax(data_set.test._labels[prediction_indices[i][0]]))
    
     # Insert data and label into train data
     data_set.train._data = np.insert(data_set.train._data, len(data_set.train._data), data, axis=0)
@@ -258,7 +260,8 @@ def move_data_from_test_to_train(prediction_indices, data_set):
     data_set.test._data = np.delete(data_set.test._data, prediction_indices[i][0], axis=0)
     data_set.test._labels = np.delete(data_set.test._labels, prediction_indices[i][0], axis=0)
     data_set.train.shuffle_data_set()
-  print('Correct relabel', correct_relabeled*1.0 / len(prediction_indices))
+    if correct_relabeled < 0:
+      print('Correct relabel', correct_relabeled*1.0 / len(prediction_indices))
   return data_set
 
 def shuffle_data(above_threshold, data_set):
