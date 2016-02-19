@@ -21,8 +21,10 @@ class CNN_MOD(object):
 
     self._w_b_c_1 = config['conv_f_1']
     self._w_b_c_2 = config['conv_f_2']
-    self._w_b_n_1 = config['nn_1']
+    self._w_b_n_1 = config['nn'][0]
     FILTER_TYPE = config['filter_type']
+    self.nn_1 = config['nn'][0]
+    self.nn_2 = config['nn'][1]
 
     filter_x = 6
     filter_y = 6
@@ -54,7 +56,7 @@ class CNN_MOD(object):
     '''Densly conected layer'''
     if FILTER_TYPE == "SAME":
       self.h_flat = tf.reshape(self.h_conv2, [-1, filter_y * window * self._w_b_c_2])
-      self.W_fc1 = self.weight_variable([filter_y * window * self._w_b_c_2, 200],self._model_name + 'W_fc1')
+      self.W_fc1 = self.weight_variable([filter_y * window * self._w_b_c_2, self.nn_1],self._model_name + 'W_fc1')
     else:  
       self.h_flat = tf.reshape(self.h_conv2, [-1, 1 * (window-5-5) * self._w_b_c_2])
       self.W_fc1 = self.weight_variable([1 * (window-5-5) * self._w_b_c_2, self._w_b_n_1],self._model_name + 'W_fc1')
@@ -64,21 +66,21 @@ class CNN_MOD(object):
 
     self.keep_prob = tf.placeholder("float")
     ''' First layer '''
-    self.b_fc1 = self.bias_variable([200], self._model_name +'b_fc1')
+    self.b_fc1 = self.bias_variable([self.nn_1], self._model_name +'b_fc1')
     layer_1 = tf.nn.relu(tf.matmul(self.h_flat, self.W_fc1) + self.b_fc1)
     #self.h_fc1_drop = tf.nn.dropout(self.h_fc1, self.keep_prob)
     
     #layer_1 = tf.nn.relu(tf.add(tf.matmul(self.h_fc1, self.W_fc1), self.b_fc1)) #Hidden layer with RELU activation
     ''' Second layer '''
   
-    self.W_fc2 = self.weight_variable([200, 100],self._model_name + 'W_fc2')
+    self.W_fc2 = self.weight_variable([self.nn_1, self.nn_2],self._model_name + 'W_fc2')
     print self.W_fc2.get_shape()
-    self.b_fc2 = self.bias_variable([100],self._model_name + 'b_fc2')
+    self.b_fc2 = self.bias_variable([self.nn_2],self._model_name + 'b_fc2')
     print self.b_fc2.get_shape()
     layer_2 = tf.nn.relu(tf.add(tf.matmul(layer_1, self.W_fc2), self.b_fc2)) #Hidden layer with RELU activation    
 
     ''' Third layer '''
-    self.W_fc3 = self.weight_variable([100, 2],self._model_name + 'W_fc2')
+    self.W_fc3 = self.weight_variable([self.nn_2, self._output_size],self._model_name + 'W_fc2')
     print self.W_fc3.get_shape()
     self.b_fc3 = self.bias_variable([self._output_size],self._model_name + 'b_fc2')
     print self.b_fc3.get_shape()
@@ -93,22 +95,22 @@ class CNN_MOD(object):
     self.init_op = tf.initialize_all_variables()
 
   def weight_variable(self,shape,name):
-  	#print "weight_variable", shape
-  	initial = tf.truncated_normal(shape, stddev=0.1)
-	return tf.Variable(initial,name= name)
+    #print "weight_variable", shape
+    initial = tf.truncated_normal(shape, stddev=0.1)
+    return tf.Variable(initial,name= name)
 
   def bias_variable(self, shape, name):
-	#print 'bias_variable', shape
-	initial = tf.constant(0.1, shape=shape)
-	return tf.Variable(initial, name = name)
+  #print 'bias_variable', shape
+    initial = tf.constant(0.1, shape=shape)
+    return tf.Variable(initial, name = name)
 
   def conv2d(self, x, W, filter_type):
-  	#print 'conv2d', x
-	return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding=filter_type)
+    #print 'conv2d', x
+    return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding=filter_type)
 
   def max_pool_2x2(self, x):
-	#print 'max_pool_2x2', x
-	return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
+  #print 'max_pool_2x2', x
+    return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
 
   def set_data_set(self, data_set):
@@ -159,9 +161,9 @@ class CNN_MOD(object):
     for i in range(self._iteration_size):
       batch = self._data_set.train.next_batch(self._batch_size)
       self.sess.run(self.train_step, feed_dict={self.x: batch[0], self.y_: batch[1], self.keep_prob: 0.5})
-      if i%100 == 0:
-        print i
-      	#print(i,self.sess.run(self.accuracy,feed_dict={self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0}))
+      #if i%100 == 0:
+        #print i, 'Iteration'
+        #print(i,self.sess.run(self.accuracy,feed_dict={self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0}))
 
 
     print(self.sess.run(self.accuracy,feed_dict={
