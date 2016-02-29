@@ -53,12 +53,12 @@ class CNN_STATIC_VARS(object):
 	def get_subject_set_SS(self, random = None):
 		SUBJECTS = ["01A","02A","03A","04A"]#,"05A","06A","08A","09A","10A","11A","12A","13A","14A","15A","16A","18A","19A","20A","21A","22A","23A"]
 		if random:
-			SUBJECTS = ["01A","02A","03A","04A","05A","06A","08A"]#,"09A","10A","11A","12A","13A","14A","15A","16A"]#,"18A","19A","20A","21A","22A","23A"]
+			SUBJECTS = ["01A","02A","03A","04A","05A","06A","08A","09A","10A"]#,"11A","12A","13A","14A","15A","16A","18A","19A","20A","21A","22A","23A"]
 			i = np.random.randint(len(SUBJECTS))
 			TEST_SUBJECTS = [SUBJECTS.pop(i)]
 			TRAIN_SUBJECTS = SUBJECTS
 		else:
-			TEST_SUBJECTS = ["02A","03A","04A","05A","06A","08A","09A","10A","11A","12A","13A","14A","15A","16A","18A","19A","20A","21A","22A","23A"]
-			TRAIN_SUBJECTS = ["01A"]
+			TRAIN_SUBJECTS = ["01A","02A","04A","05A","06A","08A","09A"]#,"10A","11A","12A","13A","14A","15A","16A","18A","19A","20A","21A","22A","23A"]
+			TEST_SUBJECTS = ["03A"]
 
 		return [TRAIN_SUBJECTS, TEST_SUBJECTS]

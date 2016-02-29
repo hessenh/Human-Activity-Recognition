@@ -22,8 +22,10 @@ class CNN_SS_TRAIN(object):
       self.data_set = data_generator.read_SS_data_set(subject_set, self.output, convertion, window)
 
       networks = []
+      filter_types = ["VALID","SAME","VALID"]
       for i in range(0,number_of_classifiers):
          self.config['model_name'] = self.config['model_name'] + "_" + str(i)
+         #self.config['filter_type'] = filter_types[i]
          cnn = CNN_MOD_2.CNN_MOD(self.config)
          cnn.set_data_set(self.data_set)
          cnn.train_network()
@@ -33,7 +35,7 @@ class CNN_SS_TRAIN(object):
       ss_iterator = 0
       num_samples = 0
       while ss_iterator < 10:   
-         prediction_steps = 100
+         prediction_steps = 10
          test_set_length = len(self.data_set.test._labels)
          threshold = 0.95
          # Returns an n-long array with random integer
@@ -47,24 +49,18 @@ class CNN_SS_TRAIN(object):
             # Get the data instance
             data = self.data_set.test._data[test_indecies[i]]
             # Predict the class label
-            predictions = []
-            activities = []
+            predictions = np.zeros((number_of_classifiers, self.output))    
+            # Add the different prediction vectors to a list
             for j in range(0, number_of_classifiers):
                prediction = networks[j].run_network_return_probability([[data]])[0]
-               predictions.append(prediction)
-               activity = np.argmax(prediction)
-               activities.append(activity)
+               predictions[j] = prediction
+            
+            # Check if the majority of the predictions are over the threshold
+            if np.sum(predictions > threshold) >=  number_of_classifiers:# np.ceil(number_of_classifiers*1.0 / 2):
+               prediction_indices.append([test_indecies[i], predictions])
 
-            max_prediction_index = np.argmax(predictions)/ len(predictions[0])
-            if predictions[max_prediction_index][activities[max_prediction_index]] >= threshold:
-               prediction_indices.append([test_indecies[i], activities[max_prediction_index]])
-            #prediction = self.cnn.run_network_return_probability([[data]])[0]
-            #activity = np.argmax(prediction)
-            # If the prediction is above a given threshold, add the index to a list
-            #if prediction[activity] >= threshold:
-            #   prediction_indices.append([test_indecies[i], activity])
-         
-         print len(prediction_indices)
+           
+         print 'Number of new instances',len(prediction_indices)
          num_samples += len(prediction_indices)
          self.data_set = data_generator.move_data_from_test_to_train(prediction_indices, self.data_set)
          for cnn in networks:
@@ -76,6 +72,6 @@ class CNN_SS_TRAIN(object):
       #self.cnn.save_model('models/' + network_type + '_' + str(input_size) + '_' + str(conv_f_1) + '_' + str(conv_f_2) + '_' + str(nn_1) + '_' + filter_type)
 
 
-cnn_h = CNN_SS_TRAIN('original', 500 , '1.0', 600, 20, 40, 200, "VALID", 1) 
+cnn_h = CNN_SS_TRAIN('original', 3000 , '1.0', 600, 20, 40, 200, "VALID", 3) 
 
 
