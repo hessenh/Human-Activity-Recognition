@@ -1,2 +1,4 @@
-model_checkpoint_path: "models/cycling-sitting_600_20_40_200_SAME"
-all_model_checkpoint_paths: "models/cycling-sitting_600_20_40_200_SAME"
+
+model_checkpoint_path: "models/original_600_4_8_800_400_VALID"
+all_model_checkpoint_paths: "models/original_600_4_8_800_400_VALID"
+
