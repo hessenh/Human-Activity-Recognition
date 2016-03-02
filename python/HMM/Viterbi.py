@@ -23,11 +23,12 @@ class Viterbi(object):
 		print '- Loaded actual labels'
 		self.actual_labels_length =  len(self.actual_labels)
 
-	def generate_start_probability(self):
+	def generate_start_probability(self,numOfAct):
 		self.start_probability = {}
 		for i in range(len(self.states)):
-			self.start_probability[self.states[i]] =  np.log(np.count_nonzero(self.actual_labels[:,i])*1.0 / self.actual_labels_length)
+			self.start_probability[self.states[i]] = 1/numOfAct #np.log(np.count_nonzero(self.actual_labels[:,i])*1.0 / self.actual_labels_length)
 		print '- Generated Start Probability'
+
 
 	def generate_transition_probability(self):
 		# Create structure of matrix
@@ -43,7 +44,6 @@ class Viterbi(object):
 			first =  self.states[np.argmax(self.actual_labels[i])]
 			sec = self.states[np.argmax(self.actual_labels[i+1])]
 			self.transition_probability[first][sec] += 1
-
 		# Divide the values in the matrix by the length of the observation
 		for d in self.transition_probability:
 			
@@ -53,20 +53,26 @@ class Viterbi(object):
 				self.transition_probability[d][key] = np.log(value*1.0 / labelsCount)
     	print '- Generated Transition Probability'
 
+
 	def generate_observation_probability(self):
 		# For each observation
+
 		for j in range(0, self.observations_length):#self.observations_length
 			# Do it for evert state
-			for i in range(len(self.states)):
+			for i in range(0,len(self.states)):
 				self.emission_probability[j][i] = self.observations[j][i]  / np.exp(self.start_probability[states[i]])
-		
 			s = np.sum(self.emission_probability[j])
 			for i in range(0, len(self.states)):
+				
 				self.emission_probability[j][i] = self.emission_probability[j][i] / s
+				
 
 			for i in range(0, len(self.states)):
+				
 				self.emission_probability[j][i] = np.log(self.emission_probability[j][i])
+				
 		print '- Generated Emission Probability'
+		
 
 
 	def run(self):
@@ -111,21 +117,27 @@ class Viterbi(object):
 		for i in range(0,len(path)):
 			viterbi.append(self.states.index(path[i]))
 			
-		np.savetxt('../Tensorflow/predictions/viterbi_' + classification + '.csv', viterbi, delimiter=",")
+		np.savetxt('./predictions/viterbi_' + classification + '.csv', viterbi, delimiter=",")
 
 
-		
-predictions_sd = '../Tensorflow/predictions/prediction_stand_sit_prob.csv'
-actual_sd = '../Tensorflow/predictions/actual_stand_sit_prob.csv'
+network_type = 'stand-sit'		
+predictions = './predictions/prediction_'+network_type+'_prob.csv'
+actual = './predictions/actual_'+network_type+'_prob.csv'
 states = ['STAND','SIT','OTHER']
-classification = "stand_sit"
+#states = ['WALKING','RUNNING','SHUFFLING','STAIRS (UP)', 'STAIRS (DOWN)', 'STANDING', 'VIGOROUS', 'NON-VIGOROUS']
+#states = ['STAIRS UP', 'STAIRS DOWN']
+#states = ['STAIRS UP', 'STAIRS DOWN','WALK']
+#states = ['SHUF', 'STAND','NON-VIGOROUS']
+#states = ['S','D']
+#states = ['WALKING','RUNNING','SHUFFLING','STAIRS (UP)','STAIRS (DOWN)','STANDING','SITTING','LYING','TRANSITION','BENDING','PICKING','UNDEFINED','CYCLING (SITTING)','CYCLING (STANDING)','HEEL-DROP','VIGOROUS','NON-VIGOROUS']
+numOfAct = len(states)
 v = Viterbi(states)
-v.load_observations(predictions_sd)
-v.load_actual_labels(actual_sd)
-v.generate_start_probability()
+v.load_observations(predictions)
+v.load_actual_labels(actual)
+v.generate_start_probability(numOfAct)
 v.generate_transition_probability()
 v.generate_observation_probability()
 v.run()
 v.generate_path()
 v.get_accuracy()
-v.save_viterbi(classification)
+v.save_viterbi(network_type)

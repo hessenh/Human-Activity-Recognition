@@ -14,13 +14,45 @@ class CNN_TEST(object):
       subject_set = self.VARS.get_subject_set()
 
       
-      convertion = self.VARS.CONVERTION_STATIC_DYNAMIC
-      config = self.VARS.get_config(input_size, 2, index, 100, network_type, conv_f_1, conv_f_2, nn_1, filter_type)
-      print 'Creating data set'
-      self.data_set = input_data_window_large.read_data_sets(subject_set, self.VARS.len_convertion_list(convertion), convertion, None, window)
+      if network_type=='original':
+         convertion = self.VARS.CONVERTION_ORIGINAL
+         self.config = self.VARS.get_config(input_size, self.VARS.len_convertion_list(convertion), index, 100, network_type, conv_f_1, conv_f_2, nn_1, filter_type)
+         print 'Creating data set'
+         self.data_set = input_data_window_large.read_data_sets(subject_set, self.VARS.len_convertion_list(convertion), convertion, None, window)
       
+      if network_type=='stand-up':
+         remove_activities = self.VARS.CONVERTION_STAND_UP_INVERSE
+         keep_activities = self.VARS.CONVERTION_STAND_UP
+         self.config = self.VARS.get_config(input_size, len(keep_activities), index, 100, network_type, conv_f_1, conv_f_2, nn_1, filter_type)
+         self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, len(keep_activities), remove_activities, None, keep_activities, window)
 
-      self.cnn = CNN_MOD.CNN_MOD(config)
+      if network_type=='stairs-walk':
+         remove_activities = self.VARS.CONVERTION_STAIRS_WALK_INVERSE
+         keep_activities = self.VARS.CONVERTION_STAIRS_WALK
+         self.config = self.VARS.get_config(input_size, len(keep_activities), index, 100, network_type, conv_f_1, conv_f_2, nn_1, filter_type)
+         self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, len(keep_activities), remove_activities, None, keep_activities, window)
+
+      if network_type=='stairs':
+         remove_activities = self.VARS.CONVERTION_STAIRS_INVERSE
+         keep_activities = self.VARS.CONVERTION_STAIRS
+         self.config = self.VARS.get_config(input_size, len(keep_activities), index, 100, network_type, conv_f_1, conv_f_2, nn_1, filter_type)
+         self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, len(keep_activities), remove_activities, None, keep_activities, window)
+
+      if network_type=='cycling-sitting':
+         remove_activities = self.VARS.CONVERTION_CYCLING_SITTING_INVERSE
+         keep_activities = self.VARS.CONVERTION_CYCLING_SITTING
+         self.config = self.VARS.get_config(input_size, len(keep_activities), index, 100, network_type, conv_f_1, conv_f_2, nn_1, filter_type)
+         self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, len(keep_activities), remove_activities, None, keep_activities, window)
+
+
+      if network_type=='stand-nonvig-shuf':
+         remove_activities = self.VARS.CONVERTION_STAND_NONVIG_SHUF_INVERSE
+         keep_activities = self.VARS.CONVERTION_STAND_NONVIG_SHUF
+         self.config = self.VARS.get_config(input_size, len(keep_activities), index, 100, network_type, conv_f_1, conv_f_2, nn_1, filter_type)
+         self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, len(keep_activities), remove_activities, None, keep_activities, window)
+
+
+      self.cnn = CNN_MOD.CNN_MOD(self.config)
       self.cnn.set_data_set(self.data_set)
 
       self.cnn.load_model('models/' + network_type+ '_' + str(input_size) + '_' + str(conv_f_1) + '_' + str(conv_f_2) + '_' + str(nn_1) + '_' + filter_type)
@@ -34,4 +66,4 @@ class CNN_TEST(object):
          print np.argmax(data[1])+1, self.cnn.run_network(data)
       
 
-cnn_h = CNN_TEST('sd', 2000, 2, '1.0', 600, 20, 40, 200, "VALID")
+cnn_h = CNN_TEST('cycling-sitting', 2000, 1, '1.0', 600, 20, 40, 200, "SAME")
