@@ -241,7 +241,7 @@ def move_data_from_test_to_train(prediction_indices, data_set):
     for j in prediction_indices[i][1]:
       predictions.append(np.argmax(j))
 
-    majority = True
+    majority = False
     if majority:
       acitivity = np.argmax(np.bincount(predictions))
     else: # max prediction

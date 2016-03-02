@@ -38,10 +38,10 @@ class CNN_SS_TRAIN(object):
 
       ss_iterator = 0
       num_samples = 0
-      while ss_iterator < 10:   
+      while ss_iterator < 5:   
          prediction_steps = 10
          test_set_length = len(self.data_set.test._labels)
-         threshold = 0.5
+         threshold = 0.4
          # Returns an n-long array with random integer
          # integer range, length of array
          test_indecies = np.random.choice(test_set_length, test_set_length, replace=False)
@@ -81,6 +81,6 @@ class CNN_SS_TRAIN(object):
       #self.cnn.save_model('models/' + network_type + '_' + str(input_size) + '_' + str(conv_f_1) + '_' + str(conv_f_2) + '_' + str(nn_1) + '_' + filter_type)
 
 
-cnn_h = CNN_SS_TRAIN('original', 3000 , '1.0', 600, 20, 40, 200, "SAME", 1) 
+cnn_h = CNN_SS_TRAIN('original', 1000 , '1.0', 600, 20, 40, 200, "SAME", 1) 
 
 
