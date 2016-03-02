@@ -166,5 +166,5 @@ class CNN_MOD(object):
         #print(i,self.sess.run(self.accuracy,feed_dict={self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0}))
 
 
-    print(self.sess.run(self.accuracy,feed_dict={
-      self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0}))
+    #print(self.sess.run(self.accuracy,feed_dict={
+    #  self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0}))

@@ -166,6 +166,10 @@ class CNN_MOD(object):
         #print i, 'Iteration'
       	#print(i,self.sess.run(self.accuracy,feed_dict={self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0}))
 
+
+    accuracy = self.sess.run(self.accuracy,feed_dict={self.x: self._data_set.validation.data, self.y_: self._data_set.validation.labels, self.keep_prob: 1.0})
+    print 'Accuracy', accuracy
+
     number_of_activities = len(self._data_set.validation.labels[0])
     activity_accuracy = np.zeros(number_of_activities)
     non_activities = [11,14]

@@ -231,40 +231,19 @@ class DataSet(object):
 
 
 def move_data_from_test_to_train(prediction_indices, data_set):
-  correct_relabeled = 0
   ''' Sort data based on index '''
   prediction_indices = sorted(prediction_indices, key=lambda row: row[0])
+
+
+  activities = np.zeros(len(data_set.validation._labels[0]))
   for i in range(len(prediction_indices)-1,-1,-1):
 
     data = data_set.test._data[prediction_indices[i][0]]
-    predictions = []
-    for j in prediction_indices[i][1]:
-      predictions.append(np.argmax(j))
-
-    majority = True
-    if majority:
-      acitivity = np.argmax(np.bincount(predictions))
-    else: # max prediction
-      acitivity = 0.0
-      prediction = 0.0
-      # From all the different classifiers, find the activity with the highest confident
-      for j in range(0,len(prediction_indices[i][1])):
-        temp_prediction = np.max(prediction_indices[i][1][j])
-        if temp_prediction >= prediction:
-          acitivity = np.argmax(prediction_indices[i][1][j])
-          prediction = temp_prediction
-
-    # Create label
-    label = np.zeros(len(data_set.train._labels[0]))
-    label[acitivity] = 1.0
     
-    #print(temp_label, prediction_indices[i][0])
-    # Count correct relabeling
-    if np.argmax(label) == np.argmax(data_set.test._labels[prediction_indices[i][0]]):
-      correct_relabeled += 1
-    #else:
-    #  print(np.argmax(label),np.argmax(data_set.test._labels[prediction_indices[i][0]]))
-   
+    # Create label
+    label = data_set.test._labels[prediction_indices[i][0]]
+    activities += label
+    #print(np.argmax(label)+1)
     # Insert data and label into train data
     data_set.train._data = np.insert(data_set.train._data, len(data_set.train._data), data, axis=0)
     data_set.train._labels = np.insert(data_set.train._labels, len(data_set.train._labels), label, axis=0)
@@ -272,10 +251,8 @@ def move_data_from_test_to_train(prediction_indices, data_set):
     # Delete data and label from test subject
     data_set.test._data = np.delete(data_set.test._data, prediction_indices[i][0], axis=0)
     data_set.test._labels = np.delete(data_set.test._labels, prediction_indices[i][0], axis=0)
-  
+  print(activities)
   data_set.train.shuffle_data_set()
-  if correct_relabeled > 0:
-    print('Correct relabel', correct_relabeled*1.0 / len(prediction_indices), "majority", majority)
   return data_set
 
 def shuffle_data(above_threshold, data_set):
