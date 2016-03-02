@@ -28,11 +28,11 @@ def classify(classifier):
 	# Take the same decision trees and run it on the test data
 	#output = clf.predict(data.test_x)
 
-	print clf.predict_proba(data.test_x[0])
-	print data.test_l[0]
+	#print clf.predict_proba(data.test_x[0])
+	#print data.test_l[0]
 
 	# Calculate score with test data
 	score = clf.score(data.test_x,data.test_l)
 	print score
 
-classify('RF')
+classify('SVM')

@@ -21,10 +21,11 @@ class CNN_MOD(object):
 
     self._w_b_c_1 = config['conv_f_1']
     self._w_b_c_2 = config['conv_f_2']
-    self._w_b_n_1 = config['nn'][0]
+    self._w_b_n_1 = config['nn_1']
     FILTER_TYPE = config['filter_type']
-    self.nn_1 = config['nn'][0]
-    self.nn_2 = config['nn'][1]
+    self.nn_1 = 200
+    self.nn_2 = 100
+
 
     filter_x = 6
     filter_y = 6
@@ -95,22 +96,22 @@ class CNN_MOD(object):
     self.init_op = tf.initialize_all_variables()
 
   def weight_variable(self,shape,name):
-    #print "weight_variable", shape
-    initial = tf.truncated_normal(shape, stddev=0.1)
-    return tf.Variable(initial,name= name)
+  	#print "weight_variable", shape
+  	initial = tf.truncated_normal(shape, stddev=0.1)
+	return tf.Variable(initial,name= name)
 
   def bias_variable(self, shape, name):
-  #print 'bias_variable', shape
-    initial = tf.constant(0.1, shape=shape)
-    return tf.Variable(initial, name = name)
+	#print 'bias_variable', shape
+	initial = tf.constant(0.1, shape=shape)
+	return tf.Variable(initial, name = name)
 
   def conv2d(self, x, W, filter_type):
-    #print 'conv2d', x
-    return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding=filter_type)
+  	#print 'conv2d', x
+	return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding=filter_type)
 
   def max_pool_2x2(self, x):
-  #print 'max_pool_2x2', x
-    return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
+	#print 'max_pool_2x2', x
+	return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
 
   def set_data_set(self, data_set):
@@ -163,8 +164,8 @@ class CNN_MOD(object):
       self.sess.run(self.train_step, feed_dict={self.x: batch[0], self.y_: batch[1], self.keep_prob: 0.5})
       #if i%100 == 0:
         #print i, 'Iteration'
-        #print(i,self.sess.run(self.accuracy,feed_dict={self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0}))
+      	#print(i,self.sess.run(self.accuracy,feed_dict={self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0}))
 
 
     print(self.sess.run(self.accuracy,feed_dict={
-      self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0}))
+      self.x: self._data_set.validation.data, self.y_: self._data_set.validation.labels, self.keep_prob: 1.0}))
