@@ -38,7 +38,7 @@ class CNN_SS_TRAIN(object):
 
       ss_iterator = 0
       num_samples = 0
-      while ss_iterator < 10:   
+      while ss_iterator < 4:   
          prediction_steps = 10
          test_set_length = len(self.data_set.test._labels)
          threshold = 0.95
@@ -60,7 +60,7 @@ class CNN_SS_TRAIN(object):
                predictions[j] = prediction
             
             # Check if the majority of the predictions are over the threshold
-            if np.sum(predictions > threshold) >=  number_of_classifiers:# np.ceil(number_of_classifiers*1.0 / 2):
+            if np.sum(predictions > threshold) >=  1:# np.ceil(number_of_classifiers*1.0 / 2):
                prediction_indices.append([test_indecies[i], predictions])
 
            
