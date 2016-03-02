@@ -41,7 +41,7 @@ class CNN_SS_TRAIN(object):
       while ss_iterator < 10:   
          prediction_steps = 10
          test_set_length = len(self.data_set.test._labels)
-         threshold = 0.95
+         threshold = 0.5
          # Returns an n-long array with random integer
          # integer range, length of array
          test_indecies = np.random.choice(test_set_length, test_set_length, replace=False)
@@ -59,8 +59,8 @@ class CNN_SS_TRAIN(object):
                prediction = networks[j].run_network_return_probability([[data]])[0]
                predictions[j] = prediction
             
-            # Check if the majority of the predictions are over the threshold
-            if np.sum(predictions > threshold) >=  number_of_classifiers:# np.ceil(number_of_classifiers*1.0 / 2):
+            # Check if the majority of the predictions are UNDER the threshold
+            if np.sum(predictions > threshold) < number_of_classifiers:
                prediction_indices.append([test_indecies[i], predictions])
 
            
@@ -81,6 +81,6 @@ class CNN_SS_TRAIN(object):
       #self.cnn.save_model('models/' + network_type + '_' + str(input_size) + '_' + str(conv_f_1) + '_' + str(conv_f_2) + '_' + str(nn_1) + '_' + filter_type)
 
 
-cnn_h = CNN_SS_TRAIN('original', 3000 , '1.0', 600, 30, 60, 200, "VALID", 1) 
+cnn_h = CNN_SS_TRAIN('original', 3000 , '1.0', 600, 20, 40, 200, "SAME", 1) 
 
 
