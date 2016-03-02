@@ -35,4 +35,4 @@ def classify(classifier):
 	score = clf.score(data.test_x,data.test_l)
 	print score
 
-classify('SVM')
+classify('RF')
