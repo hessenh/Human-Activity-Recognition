@@ -23,11 +23,11 @@ class CNN_MOD_TRAIN(object):
          self.config = self.VARS.get_config(input_size, output, iterations, 100, network_type, conv_f_1, conv_f_2, nn, filter_type)
          self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, output, remove_activities, None, keep_activities, window)
 
-      if network_type=='stand-up':
-         remove_activities = self.VARS.CONVERTION_STAND_UP_INVERSE
-         keep_activities = self.VARS.CONVERTION_STAND_UP
-         self.config = self.VARS.get_config(input_size, len(keep_activities), iterations, 100, network_type, conv_f_1, conv_f_2, nn, filter_type)
-         self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, len(keep_activities), remove_activities, None, keep_activities, window)
+      if network_type=='stand-sit':
+         remove_activities = self.VARS.CONVERTION_STAND_SIT_INVERSE
+         keep_activities = self.VARS.CONVERTION_STAND_SIT
+         self.config = self.VARS.get_config(input_size, 2, iterations, 100, network_type, conv_f_1, conv_f_2, nn, filter_type)
+         self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, 2, remove_activities, None, keep_activities, window)
 
       if network_type=='stairs':
          remove_activities = self.VARS.CONVERTION_STAIRS_INVERSE
@@ -63,5 +63,5 @@ class CNN_MOD_TRAIN(object):
 
 
 
-cnn_h = CNN_MOD_TRAIN('sd', 3000 , "1.0", 600, 20, 40, [200,100], "VALID") 
+cnn_h = CNN_MOD_TRAIN('stand-sit', 3000 , "1.0", 600, 20, 40, [200,100], "VALID") 
 

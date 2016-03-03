@@ -83,7 +83,7 @@ class Viterbi(object):
 			self.V.append({})
 			newPath = {}
 			for y in range(0, len(self.states)):
-				(prob, state) = max((self.V[t-1][y0] + self.transition_probability[y0][self.states[y]] + self.emission_probability[t][y], y0) for y0 in self.states)
+				(prob, state) = max((self.V[t-1][y0] + self.transition_probability[y0][self.states[y]]*0.5 + self.emission_probability[t][y], y0) for y0 in self.states)
 				newPath[self.states[y]] = self.path[state] + [states[y]]
 				self.V[t][self.states[y]] = prob
 			self.path = newPath
@@ -123,7 +123,7 @@ class Viterbi(object):
 network_type = 'stand-sit'		
 predictions = './predictions/prediction_'+network_type+'_prob.csv'
 actual = './predictions/actual_'+network_type+'_prob.csv'
-states = ['STAND','SIT','OTHER']
+states = ['STAND','SIT']
 #states = ['WALKING','RUNNING','SHUFFLING','STAIRS (UP)', 'STAIRS (DOWN)', 'STANDING', 'VIGOROUS', 'NON-VIGOROUS']
 #states = ['STAIRS UP', 'STAIRS DOWN']
 #states = ['STAIRS UP', 'STAIRS DOWN','WALK']
