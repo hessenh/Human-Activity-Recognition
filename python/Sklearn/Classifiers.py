@@ -9,7 +9,8 @@ import data_features
 
 def classify(classifier):
 	# Get data set
-	data = data_features.Data_Set()
+	remove_activities = [7, 8, 9, 10, 11, 12, 13, 14, 15, 17]
+	data = data_features.Data_Set(remove_activities)
 	# Set up classifier
 	if classifier == 'SVM':
 		clf = svm.SVC()

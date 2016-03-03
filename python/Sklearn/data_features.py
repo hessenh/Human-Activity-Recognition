@@ -16,14 +16,23 @@ import VAR
 
 class Data_Set(object):
   """docstring for Data_set"""
-  def __init__(self):
+  def __init__(self, remove_activities):
     VARIABLES = VAR.VARIABLES()
     window = '1.0'
 
     train = read_subjects(VARIABLES.TRAIN_SUBJECTS, window)
     self.train_x = train[0]
     self.train_l = train[1]
-    
+    print len(self.train_l)
+    print len(self.train_x)
+    remove_activities = [6]
+    for activitiy in remove_activities:
+      pos = self.train_l != activitiy
+      self.train_l = np.delete(self.train_l, pos)
+      self.train_x = np.delete(self.train_x, [True, False])
+    print self.train_x
+    print len(self.train_l)
+    print len(self.train_x)
     test = read_subjects(VARIABLES.TEST_SUBJECTS, window)
     self.test_x = test[0]
     self.test_l = test[1]
@@ -44,6 +53,7 @@ def read_subjects(subjects, window):
     
     data_x = np.concatenate((data_x,subject_x), axis=0)
     data_l = np.concatenate((data_l,subject_l), axis=0)
+
   return data_x, data_l
 
 def read_set_x(subject, window, length):
