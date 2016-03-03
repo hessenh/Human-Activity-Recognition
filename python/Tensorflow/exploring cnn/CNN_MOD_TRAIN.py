@@ -47,6 +47,12 @@ class CNN_MOD_TRAIN(object):
          self.config = self.VARS.get_config(input_size, len(keep_activities), iterations, 100, network_type, conv_f_1, conv_f_2, nn, filter_type)
          self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, len(keep_activities), remove_activities, None, keep_activities, window)
 
+      if network_type=='cycling-sitting-lying':
+         remove_activities = self.VARS.CONVERTION_CYCLING_SITTING_LYING_INVERSE
+         keep_activities = self.VARS.CONVERTION_CYCLING_SITTING_LYING
+         self.config = self.VARS.get_config(input_size, len(keep_activities), iterations, 100, network_type, conv_f_1, conv_f_2, nn, filter_type)
+         self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, len(keep_activities), remove_activities, None, keep_activities, window)
+
 
       if network_type=='stand-nonvig-shuf':
          remove_activities = self.VARS.CONVERTION_STAND_NONVIG_SHUF_INVERSE
@@ -63,5 +69,5 @@ class CNN_MOD_TRAIN(object):
 
 
 
-cnn_h = CNN_MOD_TRAIN('stand-sit', 3000 , "1.0", 600, 20, 40, [200,100], "VALID") 
+cnn_h = CNN_MOD_TRAIN('cycling-sitting-lying', 3000 , "1.0", 600, 20, 40, [200,100], "VALID") 
 

@@ -1,2 +1,2 @@
-model_checkpoint_path: "models/stand-sit_600_20_40_200_100_VALID"
-all_model_checkpoint_paths: "models/stand-sit_600_20_40_200_100_VALID"
+model_checkpoint_path: "models/cycling-sitting-lying_600_20_40_200_100_VALID"
+all_model_checkpoint_paths: "models/cycling-sitting-lying_600_20_40_200_100_VALID"
