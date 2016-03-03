@@ -5,19 +5,21 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import GaussianNB
 
 import data_features
+import VAR
 
 
 def classify(classifier):
+	VARIABLES = VAR.VARIABLES()
 	# Get data set
-	remove_activities = [7, 8, 9, 10, 11, 12, 13, 14, 15, 17]
-	data = data_features.Data_Set(remove_activities)
+	data = data_features.Data_Set()
+
 	# Set up classifier
 	if classifier == 'SVM':
 		clf = svm.SVC()
 	elif classifier == 'NearestCentroid':
 		clf = NearestCentroid()
 	elif classifier == 'RF':
-		clf = RandomForestClassifier(n_estimators = 100 )
+		clf = RandomForestClassifier(n_estimators = 200 )
 	elif classifier == 'SGD':
 		clf = SGDClassifier(loss="hinge", penalty="l2")
 	elif classifier == 'GNB':
@@ -26,14 +28,17 @@ def classify(classifier):
 	# Fit the training data to the labels and create the decision trees
 	clf.fit(data.train_x,data.train_l)  
 
+
 	# Take the same decision trees and run it on the test data
-	#output = clf.predict(data.test_x)
+	keep_activities = VARIABLES.CONVERTION_ORIGINAL
+	for activity in keep_activities:
+	
+		activity_data = data.test_x[data.test_original_l[0] == keep_activities[activity]]
+		activity_label = data.test_l[data.test_original_l[0] == keep_activities[activity]]
+		activity_score =  clf.score(activity_data, activity_label)
+		print str(activity_score).replace(".",",")
 
-	#print clf.predict_proba(data.test_x[0])
-	#print data.test_l[0]
-
-	# Calculate score with test data
 	score = clf.score(data.test_x,data.test_l)
-	print score
+	print 'Total', str(score).replace(".",",")
 
 classify('RF')
