@@ -49,8 +49,8 @@ class CNN_H(object):
 		if network_type=='cycling-sitting':
 			remove_activities = self.VARS.CONVERTION_CYCLING_SITTING_INVERSE
 			keep_activities = self.VARS.CONVERTION_CYCLING_SITTING
-			self.config = self.VARS.get_config(input_size, len(keep_activities), index, 100, network_type, conv_f_1, conv_f_2, nn_1, filter_type)
-			self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, len(keep_activities), remove_activities, None, keep_activities, window)
+			self.config = self.VARS.get_config(input_size, 3, index, 100, network_type, conv_f_1, conv_f_2, nn_1, filter_type)
+			self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, 3, remove_activities, None, keep_activities, window)
 
 
 		if network_type == 'stand-up':
@@ -97,9 +97,9 @@ class CNN_H(object):
 		np.savetxt('predictions/prediction_'+network_type+'_prob.csv', predictions, delimiter=",")
 		
 
-cnn_h = CNN_H('stand-sit', 2000, '1.0', 600, 20, 40, [200, 100], "VALID")
+cnn_h = CNN_H('cycling-sitting', 2000, '1.0', 600, 20, 40, [200, 100], "VALID")
 
-print cnn_h.run_network_probability('stand-sit',2)
+print cnn_h.run_network_probability('cycling-sitting',3)
 
 
 
