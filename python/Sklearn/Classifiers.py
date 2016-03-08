@@ -40,7 +40,7 @@ def classify(classifier, test, keep_activities_dict = None, remove_activities_di
 		clf = joblib.load('models/rf.pkl') 
 
 		predicted_activities = np.zeros(18)
-		activity_data = data.test_original_x[data.test_original_l[0] == 2]
+		activity_data = data.test_original_x[data.test_original_l[0] == 3]
 		for i in range(0,len(activity_data)):
 			data_point = activity_data.iloc[i].values
 			prediction = clf.predict_proba(data_point)[0]
@@ -55,7 +55,7 @@ def classify(classifier, test, keep_activities_dict = None, remove_activities_di
 		y_pred = clf.predict(data.test_x)
 
 		cm = confusion_matrix(data.test_l, y_pred)
-		plot_confusion_matrix(cm)
+		plot_confusion_matrix(cm, keep_activities_dict)
 
 	else:
 		# Fit the training data to the labels and create the decision trees
@@ -140,7 +140,7 @@ def subset_selector(keep_activities, remove_activities, size_of_subset_list):
 		print "_____________________________________"
 
 
-def plot_confusion_matrix(conf_arr, title='Confusion matrix'):
+def plot_confusion_matrix(conf_arr, keep_activities,title='Confusion matrix'):
 	#np.set_printoptions(precision=2)
 
 	norm_conf = []
@@ -171,7 +171,14 @@ def plot_confusion_matrix(conf_arr, title='Confusion matrix'):
 	cb = fig.colorbar(res)
 
 	plt.title('Confusion Matrix')
-	labels = ['Walking', 'Shuffeling','Running','Stairs (up)','Stairs (down)','Standing','Sitting','Lying','Transition','Bending','Picking','Cycling (sit)','Cycling (stand)', 'Vigorous','Non-vigorous']
+	activities = ['Walking','Running','Shuffeling', 'Stairs (up)','Stairs (down)','Standing','Sitting','Lying','Transition','Bending','Picking','Cycling (sit)','Cycling (stand)', 'Vigorous','Non-vigorous']
+	labels = []
+	print keep_activities
+	for key in keep_activities:
+		print activities[keep_activities[key]-1]
+		labels.append(activities[keep_activities[key]-1])
+
+	#labels = ['Walking','Running','Shuffeling', 'Stairs (up)','Stairs (down)','Standing','Sitting','Lying','Transition','Bending','Picking','Cycling (sit)','Cycling (stand)', 'Vigorous','Non-vigorous']
 	plt.xticks(range(width), labels,rotation='vertical')
 	plt.yticks(range(height), labels)
 	plt.show()
@@ -189,7 +196,7 @@ def main():
 		size_of_subset_list = [14]
 		subset_selector(keep_activities, remove_activities, size_of_subset_list)
 	else:
-		classify('RF', False)
+		classify('RF', True)
 
 if __name__ == "__main__":
     main()
