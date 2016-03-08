@@ -24,7 +24,7 @@ class CNN_TEST(object):
       if network_type=='sd':
          remove_activities = self.VARS.CONVERTION_STATIC_DYNAMIC_INVERSE
          keep_activities = self.VARS.CONVERTION_STATIC_DYNAMIC
-         output = 2
+         output = 3
          self.config = self.VARS.get_config(input_size, output, index, 100, network_type, conv_f_1, conv_f_2, nn, filter_type)
          self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, output, remove_activities, True, keep_activities, window)
 

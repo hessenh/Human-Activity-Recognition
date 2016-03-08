@@ -3,15 +3,25 @@ from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier 
 from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import GaussianNB
-
+import itertools
 import data_features
 import VAR
+from sklearn.externals import joblib
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
 
-
-def classify(classifier):
+def classify(classifier, test, keep_activities_dict = None, remove_activities_dict = None, keep_activities_original_dict = None, remove_activities_original_dict = None):
 	VARIABLES = VAR.VARIABLES()
 	# Get data set
-	data = data_features.Data_Set()
+	if keep_activities_dict == None:
+		keep_activities_dict = VARIABLES.CONVERTION_GROUPED_ACTIVITIES
+		remove_activities_dict = VARIABLES.CONVERTION_GROUPED_ACTIVITIES_INVERSE
+		keep_activities_original_dict = VARIABLES.CONVERTION_ORIGINAL
+		remove_activities_original_dict = VARIABLES.CONVERTION_ORIGINAL_INVERSE
+		print "Loading data"
+
+	data = data_features.Data_Set(keep_activities_dict, remove_activities_dict, keep_activities_original_dict, remove_activities_original_dict)
 
 	# Set up classifier
 	if classifier == 'SVM':
@@ -25,20 +35,161 @@ def classify(classifier):
 	elif classifier == 'GNB':
 		clf = GaussianNB()
 	
-	# Fit the training data to the labels and create the decision trees
-	clf.fit(data.train_x,data.train_l)  
+	if test:
+		print "test"
+		clf = joblib.load('models/rf.pkl') 
+
+		predicted_activities = np.zeros(18)
+		activity_data = data.test_original_x[data.test_original_l[0] == 2]
+		for i in range(0,len(activity_data)):
+			data_point = activity_data.iloc[i].values
+			prediction = clf.predict_proba(data_point)[0]
+			index = np.argmax(prediction)
+			if prediction[index] > 0:
+				predicted_activities[index] +=1
+		print predicted_activities
+		print sum(predicted_activities), len(activity_data)
+
+		score = clf.score(data.test_x,data.test_l)
+		print 'Total', str(score).replace(".",",")
+		y_pred = clf.predict(data.test_x)
+
+		cm = confusion_matrix(data.test_l, y_pred)
+		plot_confusion_matrix(cm)
+
+	else:
+		# Fit the training data to the labels and create the decision trees
+		clf.fit(data.train_x,data.train_l[0])  
+		joblib.dump(clf, 'models/rf.pkl', compress=1) 
+		# Take the same decision trees and run it on the test data
+		keep_activities = keep_activities_original_dict
+		score_list = []
+		for activity in keep_activities:
+		
+			activity_data = data.test_x[data.test_original_l[0] == keep_activities[activity]]
+			activity_label = data.test_l[data.test_original_l[0] == keep_activities[activity]]
+			activity_score =  clf.score(activity_data, activity_label)
+			score_list.append(activity_score)
+			#print str(activity_score).replace(".",",")
+
+		real = clf.score(data.test_x,data.test_l)
+		overall = sum(score_list) / len(score_list)
+		#print 'Real', str(real).replace(".",",")
+		#print 'Overal', overall
+		return overall, real
 
 
-	# Take the same decision trees and run it on the test data
-	keep_activities = VARIABLES.CONVERTION_ORIGINAL
-	for activity in keep_activities:
+
+def generate_subset(keep_activities, remove_activities, size_of_subsets):
+	# Generate the subsets
+	subsets = []
 	
-		activity_data = data.test_x[data.test_original_l[0] == keep_activities[activity]]
-		activity_label = data.test_l[data.test_original_l[0] == keep_activities[activity]]
-		activity_score =  clf.score(activity_data, activity_label)
-		print str(activity_score).replace(".",",")
+	for subset in itertools.combinations(keep_activities, size_of_subsets):
+		subsets.append(subset)
 
-	score = clf.score(data.test_x,data.test_l)
-	print 'Total', str(score).replace(".",",")
+	return subsets
 
-classify('RF')
+
+def generate_dictionaries(keep_activities, remove_activities, subset):
+	# Create the convertion dictionary
+	CONVERTION_GROUPED_ACTIVITIES = {}
+	CONVERTION_ORIGINAL = {}
+	for i in keep_activities:
+		CONVERTION_GROUPED_ACTIVITIES[i] = len(subset) + 1
+		CONVERTION_ORIGINAL[i] = i
+	# Populate the dictionary
+	group_nr = 1
+	for i in subset:
+		CONVERTION_GROUPED_ACTIVITIES[i] = group_nr
+		group_nr +=1
+
+	# Remove activity dictionary
+	CONVERTION_GROUPED_ACTIVITIES_INVERSE = {}
+	CONVERTION_ORIGINAL_INVERSE = {}
+	for i in remove_activities:
+		CONVERTION_GROUPED_ACTIVITIES_INVERSE[i] = i
+		CONVERTION_ORIGINAL_INVERSE[i] = i
+
+	return CONVERTION_GROUPED_ACTIVITIES, CONVERTION_GROUPED_ACTIVITIES_INVERSE, CONVERTION_ORIGINAL, CONVERTION_ORIGINAL_INVERSE
+
+def subset_selector(keep_activities, remove_activities, size_of_subset_list):
+	
+
+	for size in size_of_subset_list:
+		subsets = generate_subset(keep_activities, remove_activities, size)
+		print "Size of subsets", size
+		print 'Number of subsets', len(subsets)
+		print subsets
+		overall_result = []
+		real_result = []
+
+		# Iterate over all subsets
+		for subset in subsets:
+			CONVERTION_GROUPED_ACTIVITIES, CONVERTION_GROUPED_ACTIVITIES_INVERSE, CONVERTION_ORIGINAL, CONVERTION_ORIGINAL_INVERSE = generate_dictionaries(keep_activities, remove_activities, subset)
+			overall, real = classify('RF', False, CONVERTION_GROUPED_ACTIVITIES, CONVERTION_GROUPED_ACTIVITIES_INVERSE, CONVERTION_ORIGINAL, CONVERTION_ORIGINAL_INVERSE)
+			real_result.append(real)
+			overall_result.append(overall)
+
+		print "______________Finished_______________"
+		real_index =  np.argmax(real_result)
+		print "Real accuracy",real_result[real_index]
+		print "Real subset", subsets[real_index]
+		overall_index =  np.argmax(overall_result)
+		print "Overall accuracy", overall_result[overall_index]
+		print "Overall subset", subsets[overall_index]
+		print "_____________________________________"
+
+
+def plot_confusion_matrix(conf_arr, title='Confusion matrix'):
+	#np.set_printoptions(precision=2)
+
+	norm_conf = []
+	for i in conf_arr:
+	    a = 0
+	    tmp_arr = []
+	    a = sum(i, 0)
+	    for j in i:
+	        tmp_arr.append(float(j)/float(a))
+	    norm_conf.append(tmp_arr)
+
+	fig = plt.figure()
+	plt.clf()
+	ax = fig.add_subplot(111)
+	ax.set_aspect(1)
+	res = ax.imshow(np.array(norm_conf), cmap=plt.cm.summer, 
+	                interpolation='nearest')
+
+	width = len(conf_arr)
+	height = len(conf_arr[0])
+
+	for x in xrange(width):
+	    for y in xrange(height):
+	        ax.annotate(str(conf_arr[x][y]), xy=(y, x), 
+	                    horizontalalignment='center',
+	                    verticalalignment='center')
+
+	cb = fig.colorbar(res)
+
+	plt.title('Confusion Matrix')
+	labels = ['Walking', 'Shuffeling','Running','Stairs (up)','Stairs (down)','Standing','Sitting','Lying','Transition','Bending','Picking','Cycling (sit)','Cycling (stand)', 'Vigorous','Non-vigorous']
+	plt.xticks(range(width), labels,rotation='vertical')
+	plt.yticks(range(height), labels)
+	plt.show()
+
+
+
+
+def main():
+	subsets = False
+	
+	if subsets:
+		
+		keep_activities = [1,2,3,4,5,6,7,8,10,11,13,14,16]
+		remove_activities = [9,12,15,17]
+		size_of_subset_list = [14]
+		subset_selector(keep_activities, remove_activities, size_of_subset_list)
+	else:
+		classify('RF', False)
+
+if __name__ == "__main__":
+    main()

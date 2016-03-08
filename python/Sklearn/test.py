@@ -1,10 +1,34 @@
+import itertools
 
+activities = ['walking'	
+			,'Running'	
+			,'shuffling'	
+			,'stairs (ascending)'	
+			,'stairs (descending)'	
+			,'standing'	
+			,'sitting'	
+			,'lying'	
+			,'Bending'	
+			,'Picking'	
+			,'Cycling (sitting)'	
+			,'Cycling (stand)'	
+			,'Vigorous Activities']
 
-import numpy as np 
+activities = ['walking'	
+			,'Running'	
+			,'shuffling'	
+			,'stairs (ascending)'	
+			,'stairs (descending)'	
+			,'standing'	
+			,'Vigorous Activities']
 
-a = np.array([[1],[2],[1],[2],[3]])
-data = np.array([[1,1,1],[2,2,2],[3,3,3],[4,4],[7,7,7,7]])
+#activities = ["hei","hade","kanskj"]
 
-r = [1]
-for i in r:
-	print data == (a != rb)
+subsets = []
+for L in range(0, len(activities)+1):
+  for subset in itertools.combinations(activities, L):
+    subsets.append(subset)
+
+subsets.pop(0)
+
+print subsets[10]
