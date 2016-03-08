@@ -18,7 +18,7 @@ class Data_Set(object):
   """docstring for Data_set"""
   def __init__(self, keep_activities, remove_activities,keep_activities_original_dict, remove_activities_original_dict):
     VARIABLES = VAR.VARIABLES()
-    window = '1.0'
+    window = '2.0'
     #keep_activities = VARIABLES.CONVERTION_GROUPED_ACTIVITIES
     #remove_activities = VARIABLES.CONVERTION_GROUPED_ACTIVITIES_INVERSE
     #print "Loading training data"

@@ -2,6 +2,7 @@ import input_data_window_large
 import CNN_STATIC_VARIABLES
 import CNN_MOD
 import CNN_MOD_2
+import CNN_MOD_3
 
 
 class CNN_MOD_TRAIN(object):
@@ -47,7 +48,6 @@ class CNN_MOD_TRAIN(object):
          self.config = self.VARS.get_config(input_size, len(keep_activities), iterations, 100, network_type, conv_f_1, conv_f_2, nn, filter_type)
          self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, len(keep_activities), remove_activities, None, keep_activities, window)
 
-
       if network_type=='stand-nonvig-shuf':
          remove_activities = self.VARS.CONVERTION_STAND_NONVIG_SHUF_INVERSE
          keep_activities = self.VARS.CONVERTION_STAND_NONVIG_SHUF
@@ -63,5 +63,5 @@ class CNN_MOD_TRAIN(object):
 
 
 
-cnn_h = CNN_MOD_TRAIN('sd', 1000 , "1.0", 600, 20, 40, [200,100], "VALID") 
+cnn_h = CNN_MOD_TRAIN('original', 3000 , "1.0", 600, 20, 40, [200,100], "SAME") 
 
