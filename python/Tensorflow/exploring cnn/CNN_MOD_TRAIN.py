@@ -2,6 +2,7 @@ import input_data_window_large
 import CNN_STATIC_VARIABLES
 import CNN_MOD
 import CNN_MOD_2
+import CNN_MOD_3
 
 
 class CNN_MOD_TRAIN(object):
@@ -19,7 +20,7 @@ class CNN_MOD_TRAIN(object):
       if network_type=='sd':
          remove_activities = self.VARS.CONVERTION_STATIC_DYNAMIC_INVERSE
          keep_activities = self.VARS.CONVERTION_STATIC_DYNAMIC
-         output = 2
+         output = 3
          self.config = self.VARS.get_config(input_size, output, iterations, 100, network_type, conv_f_1, conv_f_2, nn, filter_type)
          self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, output, remove_activities, None, keep_activities, window)
 
@@ -69,5 +70,7 @@ class CNN_MOD_TRAIN(object):
 
 
 
-cnn_h = CNN_MOD_TRAIN('cycling-sitting-lying', 3000 , "1.0", 600, 20, 40, [200,100], "VALID") 
+
+cnn_h = CNN_MOD_TRAIN('original', 3000 , "1.0", 600, 20, 40, [200,100], "SAME") 
+
 
