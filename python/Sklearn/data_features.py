@@ -16,25 +16,26 @@ import VAR
 
 class Data_Set(object):
   """docstring for Data_set"""
-  def __init__(self):
+  def __init__(self, keep_activities, remove_activities,keep_activities_original_dict, remove_activities_original_dict):
     VARIABLES = VAR.VARIABLES()
-    window = '1.0'
-    keep_activities = VARIABLES.CONVERTION_GROUPED_ACTIVITIES
-    remove_activities = VARIABLES.CONVERTION_GROUPED_ACTIVITIES_INVERSE
-    print "Loading training data"
+    window = '2.0'
+    #keep_activities = VARIABLES.CONVERTION_GROUPED_ACTIVITIES
+    #remove_activities = VARIABLES.CONVERTION_GROUPED_ACTIVITIES_INVERSE
+    #print "Loading training data"
     train = read_subjects(VARIABLES.TRAIN_SUBJECTS, window, keep_activities, remove_activities)
     self.train_x = train[0]
     self.train_l = train[1]
     
-    print "Loading test data"
+    #print "Loading test data"
     test = read_subjects(VARIABLES.TEST_SUBJECTS, window, keep_activities, remove_activities)
     self.test_x = test[0]
     self.test_l = test[1]
 
-    print "Loading original data"
-    keep_activities = VARIABLES.CONVERTION_ORIGINAL
-    remove_activities = VARIABLES.CONVERTION_ORIGINAL_INVERSE
-    test_original = read_subjects(VARIABLES.TEST_SUBJECTS, window, keep_activities, remove_activities)
+    #print "Loading original data"
+    #keep_activities = VARIABLES.CONVERTION_ORIGINAL
+    #remove_activities = VARIABLES.CONVERTION_ORIGINAL_INVERSE
+    #test_original = read_subjects(VARIABLES.TEST_SUBJECTS, window, keep_activities, remove_activities)
+    test_original = read_subjects(VARIABLES.TEST_SUBJECTS, window, keep_activities_original_dict, remove_activities_original_dict)
     self.test_original_x = test_original[0]
     self.test_original_l = test_original[1]
 
@@ -47,7 +48,7 @@ def read_subjects(subjects, window,keep_activities, remove_activities):
 
   for i in range(1,len(subjects)):
     subject_l = read_set_label(subjects[i],window)
-      # Assures that the length of data is the same as the length of labels
+    # Assures that the length of data is the same as the length of labels
     length = len(subject_l)
     subject_x = read_set_x(subjects[i], window, length)
     

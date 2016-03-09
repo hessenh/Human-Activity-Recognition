@@ -1,2 +1,7 @@
+<<<<<<< HEAD
 model_checkpoint_path: "models/cycling-sitting-lying_600_20_40_200_100_VALID"
 all_model_checkpoint_paths: "models/cycling-sitting-lying_600_20_40_200_100_VALID"
+=======
+model_checkpoint_path: "models/original_600_20_40_200_100_VALID"
+all_model_checkpoint_paths: "models/original_600_20_40_200_100_VALID"
+>>>>>>> 57e9bc029ca1807964cebbff4acbaed63e500d0b
