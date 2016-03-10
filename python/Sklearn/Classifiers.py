@@ -220,8 +220,8 @@ def main():
 		size_of_subset_list = [1,2,3]
 		subset_selector(keep_activities, remove_activities, size_of_subset_list)
 	else:
-		classify('SVM', False)
-		classify('SVM', True)
+		classify('RF', False)
+		classify('RF', True)
 
 if __name__ == "__main__":
     main()
