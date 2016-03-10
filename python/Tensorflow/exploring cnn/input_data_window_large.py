@@ -107,6 +107,7 @@ def extract_merged_labels_and_data(subject, output_size, remove_activities, conv
   for i in range(len(df_labels)):
     a = df_labels.iloc[i]
     n =  np.zeros(output_size)
+    #print(a,n,convert_activties)
     n[convert_activties.get(a)-1] = 1
     m.append(n)
 
