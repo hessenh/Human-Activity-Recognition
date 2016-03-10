@@ -26,7 +26,7 @@ class CNN_MOD(object):
     self.nn_1 = config['nn'][0]
     self.nn_2 = config['nn'][1]
     print config
-    filter_x = 35
+    filter_x = 25
     filter_y = 6
     resize_y = 6
     resize_x = 100
@@ -39,12 +39,19 @@ class CNN_MOD(object):
 
     self.x_image = tf.reshape(self.x, [-1, resize_y, resize_x, 1])
     print self.x_image.get_shape(), 'X reshaped'
+
+    convolutional_layers = []
+
     '''First convolutional layer'''
     self.W_conv1 = self.weight_variable([1, filter_x, 1, self._w_b_c_1], self._model_name + "W_conv1")
     self.b_conv1 = self.bias_variable([self._w_b_c_1],self._model_name + 'b_conv1')
     self.h_conv1 = tf.nn.relu(self.conv2d(self.x_image, self.W_conv1, FILTER_TYPE) + self.b_conv1)
     print self.h_conv1.get_shape(), 'Features 1'
     
+
+    def connect_convolutional_layer():
+      print "hei"
+      
     '''Second convolutional layer'''
     if FILTER_TYPE == "SAME":
       self.W_conv2 = self.weight_variable([1, filter_x, self._w_b_c_1, self._w_b_c_2], self._model_name + 'W_conv2')
@@ -157,7 +164,7 @@ class CNN_MOD(object):
 
   def get_activity_list_accuracy(self, original_data_set, data_set):
     number_of_activities = len(original_data_set.test.labels[0])
-    print number_of_activities
+    
     activity_accuracy = np.zeros(number_of_activities)
     for i in range(0,number_of_activities):
       pos = original_data_set.test.labels[..., i] == 1

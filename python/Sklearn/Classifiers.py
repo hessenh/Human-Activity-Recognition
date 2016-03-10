@@ -3,6 +3,8 @@ from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier 
 from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import GaussianNB
+from sklearn.ensemble import AdaBoostRegressor
+from sklearn.tree import DecisionTreeRegressor
 import itertools
 import data_features
 import VAR
@@ -24,38 +26,44 @@ def classify(classifier, test, keep_activities_dict = None, remove_activities_di
 	data = data_features.Data_Set(keep_activities_dict, remove_activities_dict, keep_activities_original_dict, remove_activities_original_dict)
 
 	# Set up classifier
-	if classifier == 'SVM':
-		clf = svm.SVC()
-	elif classifier == 'NearestCentroid':
-		clf = NearestCentroid()
-	elif classifier == 'RF':
-		clf = RandomForestClassifier(n_estimators = 200 )
-	elif classifier == 'SGD':
-		clf = SGDClassifier(loss="hinge", penalty="l2")
-	elif classifier == 'GNB':
-		clf = GaussianNB()
-	
+	clf = select_classifier(classifier)
+
+
 	if test:
 		print "test"
 		clf = joblib.load('models/rf.pkl') 
 
-		predicted_activities = np.zeros(18)
-		activity_data = data.test_original_x[data.test_original_l[0] == 3]
-		for i in range(0,len(activity_data)):
-			data_point = activity_data.iloc[i].values
-			prediction = clf.predict_proba(data_point)[0]
-			index = np.argmax(prediction)
-			if prediction[index] > 0:
-				predicted_activities[index] +=1
-		print predicted_activities
-		print sum(predicted_activities), len(activity_data)
+		keep_activities = keep_activities_original_dict
+		
+		# Remove duplicates
+		activity_list = list(set(keep_activities.values()))
+
+
+		for activity in activity_list:
+			activity_data = data.test_x[data.test_original_l[0] == activity]
+			activity_label = data.test_l[data.test_original_l[0] == activity]
+			activity_score =  clf.score(activity_data, activity_label)
+			print str(activity_score).replace(".",",")
 
 		score = clf.score(data.test_x,data.test_l)
 		print 'Total', str(score).replace(".",",")
-		y_pred = clf.predict(data.test_x)
+		# predicted_activities = np.zeros(18)
+		# activity_data = data.test_original_x[data.test_original_l[0] == 3]
+		# for i in range(0,len(activity_data)):
+		# 	data_point = activity_data.iloc[i].values
+		# 	prediction = clf.predict_proba(data_point)[0]
+		# 	index = np.argmax(prediction)
+		# 	if prediction[index] > 0:
+		# 		predicted_activities[index] +=1
+		# print predicted_activities
+		# print sum(predicted_activities), len(activity_data)
 
-		cm = confusion_matrix(data.test_l, y_pred)
-		plot_confusion_matrix(cm, keep_activities_dict)
+		# score = clf.score(data.test_x,data.test_l)
+		# print 'Total', str(score).repl0,9944655828	1	1	1	0,9897236003	0,9949056604	0,990281827	0,9709090909	0,9748427673	0,9237288136ace(".",",")
+		# y_pred = clf.predict(data.test_x)
+
+		# cm = confusion_matrix(data.test_l, y_pred)
+		# plot_confusion_matrix(cm, keep_activities_dict)
 
 	else:
 		# Fit the training data to the labels and create the decision trees
@@ -64,10 +72,11 @@ def classify(classifier, test, keep_activities_dict = None, remove_activities_di
 		# Take the same decision trees and run it on the test data
 		keep_activities = keep_activities_original_dict
 		score_list = []
-		for activity in keep_activities:
-		
-			activity_data = data.test_x[data.test_original_l[0] == keep_activities[activity]]
-			activity_label = data.test_l[data.test_original_l[0] == keep_activities[activity]]
+		# Remove duplicates
+		activity_list = list(set(keep_activities.values()))
+		for activity in activity_list:
+			activity_data = data.test_x[data.test_original_l[0] == activity]
+			activity_label = data.test_l[data.test_original_l[0] == activity]
 			activity_score =  clf.score(activity_data, activity_label)
 			score_list.append(activity_score)
 			#print str(activity_score).replace(".",",")
@@ -78,6 +87,21 @@ def classify(classifier, test, keep_activities_dict = None, remove_activities_di
 		#print 'Overal', overall
 		return overall, real
 
+
+def select_classifier(classifier):
+	if classifier == 'SVM':
+		clf = svm.SVC()
+	elif classifier == 'NearestCentroid':
+		clf = NearestCentroid()
+	elif classifier == 'RF':
+		clf = RandomForestClassifier(n_estimators = 200 )
+	elif classifier == 'SGD':
+		clf = SGDClassifier(loss="hinge", penalty="l2")
+	elif classifier == 'GNB':
+		clf = GaussianNB()
+	elif classifier == 'AdaBoost':
+		clf = AdaBoostRegressor(DecisionTreeRegressor(max_depth=4), n_estimators=300)
+	return clf
 
 
 def generate_subset(keep_activities, remove_activities, size_of_subsets):
@@ -191,12 +215,13 @@ def main():
 	
 	if subsets:
 		
-		keep_activities = [1,2,3,4,5,6,7,8,10,11,13,14,16]
-		remove_activities = [9,12,15,17]
-		size_of_subset_list = [14]
+		keep_activities = [7,8,13]
+		remove_activities = [1,2,3,4,5,6,9,10,11,12,14,15,16,17]
+		size_of_subset_list = [1,2,3]
 		subset_selector(keep_activities, remove_activities, size_of_subset_list)
 	else:
-		classify('RF', True)
+		classify('SVM', False)
+		classify('SVM', True)
 
 if __name__ == "__main__":
     main()
