@@ -2,6 +2,12 @@
 # 
 # ==============================================================================
 
+''' 
+Conv layers: 2
+NN layers: 2
+'''
+
+
 import tensorflow as tf
 import numpy as np
 import input_data_window_large
