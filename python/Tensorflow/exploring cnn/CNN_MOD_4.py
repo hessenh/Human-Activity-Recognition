@@ -1,7 +1,12 @@
 # Modified Convolutional Neural Network
 # 
 # ==============================================================================
+'''
+Change number of conv layers dynamically
 
+'''
+
+import CNN_STATIC_VARIABLES
 import tensorflow as tf
 import numpy as np
 import input_data_window_large
@@ -18,83 +23,80 @@ class CNN_MOD(object):
     self._iteration_size = config['iteration_size']
     self._batch_size = config['batch_size']
     self._model_name = config['model_name']
-
-    self._w_b_c_1 = config['conv_f_1']
-    self._w_b_c_2 = config['conv_f_2']
-    self._w_b_n_1 = config['nn'][0]
-    FILTER_TYPE = config['filter_type']
-    self.nn_1 = config['nn'][0]
-    self.nn_2 = config['nn'][1]
-    print config
-    filter_x = 25
-    filter_y = 6
+  
+    filter_x = 30
+    filter_y = 1
     resize_y = 6
     resize_x = 100
-    window = self._input_size / filter_y
+    window = self._input_size / 6
+
+    kernel_list = [1] + config['conv_list']
+    number_of_kernels = len(kernel_list)-1
+    connections_in = resize_y * (resize_x - (number_of_kernels*filter_x) + number_of_kernels) * kernel_list[-1]
+    neural_list = [connections_in] + config['neural_list'] + [self._output_size]
+    FILTER_TYPE = 'VALID'
+
+    
+    
 
     '''Placeholders for input and output'''
     self.x = tf.placeholder("float", shape=[None, self._input_size])
-    print 'x', self.x.get_shape()
+    print self.x.get_shape(),'Input' 
     self.y_ = tf.placeholder("float", shape=[None, self._output_size])
+    print self.y_.get_shape(), 'Output'
+    self.reshaped_input = tf.reshape(self.x, [-1, resize_y, resize_x, 1])
+    print self.reshaped_input.get_shape(), 'Input reshaped'
 
-    self.x_image = tf.reshape(self.x, [-1, resize_y, resize_x, 1])
-    print self.x_image.get_shape(), 'X reshaped'
 
-    convolutional_layers = []
+    def get_conv_layer(input_variables, number_kernels_in, number_kernels_out, layer_number, filter_x, filter_y, filter_type):
+      weights = self.weight_variable([filter_y, filter_x, number_kernels_in, number_kernels_out], self._model_name + "w_conv_" + layer_number)
+      bias = self.bias_variable([number_kernels_out],self._model_name + 'b_conv_' + layer_number)
+      return tf.nn.relu(self.conv2d(input_variables, weights, filter_type) + bias)
 
-    '''First convolutional layer'''
-    self.W_conv1 = self.weight_variable([1, filter_x, 1, self._w_b_c_1], self._model_name + "W_conv1")
-    self.b_conv1 = self.bias_variable([self._w_b_c_1],self._model_name + 'b_conv1')
-    self.h_conv1 = tf.nn.relu(self.conv2d(self.x_image, self.W_conv1, FILTER_TYPE) + self.b_conv1)
-    print self.h_conv1.get_shape(), 'Features 1'
-    
 
-    def connect_convolutional_layer():
-      print "hei"
+
+    def connect_conv_layers(input_variables):
       
-    '''Second convolutional layer'''
-    if FILTER_TYPE == "SAME":
-      self.W_conv2 = self.weight_variable([1, filter_x, self._w_b_c_1, self._w_b_c_2], self._model_name + 'W_conv2')
-    else:
-      self.W_conv2 = self.weight_variable([1, filter_x, self._w_b_c_1, self._w_b_c_2], self._model_name + 'W_conv2')
+      output = get_conv_layer(input_variables, kernel_list[0], kernel_list[1], '1', filter_x, filter_y, FILTER_TYPE)
+      print output.get_shape(), 'Features 1'
+      
+      for i in range(1,len(kernel_list)-1):
+        output = get_conv_layer(output, kernel_list[i], kernel_list[i+1], str(i+1), filter_x, filter_y, FILTER_TYPE)
+        print output.get_shape(), 'Features ', i+1
 
-    self.b_conv2 = self.bias_variable([self._w_b_c_2], self._model_name +'b_conv2')
-    self.h_conv2 = tf.nn.relu(self.conv2d(self.h_conv1, self.W_conv2, FILTER_TYPE) + self.b_conv2)
-    print self.h_conv2.get_shape(), 'Features 2'
-
-    '''Densly conected layer'''
-    if FILTER_TYPE == "SAME":
-      self.h_flat = tf.reshape(self.h_conv2, [-1, resize_y * resize_x * self._w_b_c_2])
-      self.W_fc1 = self.weight_variable([resize_y * resize_x * self._w_b_c_2, self.nn_1],self._model_name + 'W_fc1')
-    else:  
-      self.h_flat = tf.reshape(self.h_conv2, [-1, resize_y * (resize_x-filter_x-filter_x+2) * self._w_b_c_2])
-      self.W_fc1 = self.weight_variable([resize_y * (resize_x-filter_x-filter_x+2) * self._w_b_c_2, self._w_b_n_1],self._model_name + 'W_fc1')
-    print self.h_flat.get_shape(), 'Output conv'
-    print self.W_fc1.get_shape(), 'Neural network input'
+      # Flatten output
+      output = tf.reshape(output, [-1, resize_y * (resize_x - (number_of_kernels*filter_x) + number_of_kernels) * kernel_list[-1]])
+      return output    
     
+
+    def get_nn_layer(input_variables, connections_in, connections_out, layer_number):
+      weights = self.weight_variable([connections_in, connections_out], self._model_name + 'w_fc_' + str(layer_number+1))
+      bias = self.bias_variable([connections_out], self._model_name +'b_fc_' + str(layer_number+1))
+      return tf.nn.relu(tf.matmul(input_variables, weights) + bias)
+
+    
+
+    def connect_nn_layers(input_variables):
+      output = get_nn_layer(input_variables, neural_list[0], neural_list[1],0)
+      print output.get_shape(), 'NN',0
+      for i in range(1, len(neural_list)-2):
+        output = get_nn_layer(output, neural_list[i], neural_list[i+1], i)
+        print output.get_shape(),'NN',i
+
+      # Last layer
+      weights = self.weight_variable([neural_list[-2], neural_list[-1]], self._model_name + 'w_fc_last')
+      bias = self.bias_variable([neural_list[-1]],self._model_name + 'b_fc_last')
+      y_conv = tf.nn.softmax(tf.matmul(output, weights) + bias)
+      return y_conv
 
     self.keep_prob = tf.placeholder("float")
-    ''' First layer '''
-    self.b_fc1 = self.bias_variable([self.nn_1], self._model_name +'b_fc1')
-    layer_1 = tf.nn.relu(tf.matmul(self.h_flat, self.W_fc1) + self.b_fc1)
-    #self.h_fc1_drop = tf.nn.dropout(self.h_fc1, self.keep_prob)
     
-    #layer_1 = tf.nn.relu(tf.add(tf.matmul(self.h_fc1, self.W_fc1), self.b_fc1)) #Hidden layer with RELU activation
-    ''' Second layer '''
-  
-    self.W_fc2 = self.weight_variable([self.nn_1, self.nn_2],self._model_name + 'W_fc2')
-    print self.W_fc2.get_shape()
-    self.b_fc2 = self.bias_variable([self.nn_2],self._model_name + 'b_fc2')
-    print self.b_fc2.get_shape()
-    layer_2 = tf.nn.relu(tf.add(tf.matmul(layer_1, self.W_fc2), self.b_fc2)) #Hidden layer with RELU activation    
+    ''' Convolutinal layers'''
+    self.output_conv = connect_conv_layers(self.reshaped_input)
 
-    ''' Third layer '''
-    self.W_fc3 = self.weight_variable([self.nn_2, self._output_size],self._model_name + 'W_fc2')
-    print self.W_fc3.get_shape()
-    self.b_fc3 = self.bias_variable([self._output_size],self._model_name + 'b_fc2')
-    print self.b_fc3.get_shape()
+    '''Densly conected layers'''
+    self.y_conv = connect_nn_layers(self.output_conv)
 
-    self.y_conv = tf.nn.softmax(tf.matmul(layer_2, self.W_fc3) + self.b_fc3)
 
     self.cross_entropy = -tf.reduce_sum(self.y_*tf.log(tf.clip_by_value(self.y_conv,1e-10,1.0)))
     self.train_step = tf.train.AdamOptimizer(1e-4).minimize(self.cross_entropy)
@@ -192,3 +194,26 @@ class CNN_MOD(object):
 
     print(self.sess.run(self.accuracy,feed_dict={
       self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0}))
+
+
+if __name__ == "__main__":
+  test = False
+  VARS = CNN_STATIC_VARIABLES.CNN_STATIC_VARS()
+  subject_set = VARS.get_subject_set(False)  
+  remove_activities = VARS.CONVERTION_STATIC_DYNAMIC_INVERSE
+  keep_activities = VARS.CONVERTION_STATIC_DYNAMIC
+  output = 10
+  config = VARS.get_config(600, output, 1000, 100, 'sd',[10,10,10], [100,50], "VALID")
+  data_set = input_data_window_large.read_data_sets_without_activity(subject_set, output, remove_activities, None, keep_activities, "1.0")
+  model = config['model_name']
+  cnn = CNN_MOD(config)
+  cnn.set_data_set(data_set)
+  if test:
+    cnn.load_model('models/' + model)
+    print cnn.test_network()
+
+  else:
+    cnn.train_network()
+    cnn.save_model('models/' + model)
+
+      

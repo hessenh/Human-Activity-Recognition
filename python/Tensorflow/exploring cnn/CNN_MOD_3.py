@@ -70,9 +70,7 @@ class CNN_MOD(object):
     ''' First layer '''
     self.b_fc1 = self.bias_variable([self.nn_1], self._model_name +'b_fc1')
     layer_1 = tf.nn.relu(tf.matmul(self.h_flat, self.W_fc1) + self.b_fc1)
-    #self.h_fc1_drop = tf.nn.dropout(self.h_fc1, self.keep_prob)
-    
-    #layer_1 = tf.nn.relu(tf.add(tf.matmul(self.h_fc1, self.W_fc1), self.b_fc1)) #Hidden layer with RELU activation
+  
     ''' Second layer '''
   
     self.W_fc2 = self.weight_variable([self.nn_1, self.nn_2],self._model_name + 'W_fc2')
@@ -183,5 +181,5 @@ class CNN_MOD(object):
         #print(i,self.sess.run(self.accuracy,feed_dict={self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0}))
 
 
-    print(self.sess.run(self.accuracy,feed_dict={
-      self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0}))
+    #print(self.sess.run(self.accuracy,feed_dict={
+    #  self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0}))
