@@ -14,13 +14,14 @@ class CNN_MOD_TRAIN(object):
       if network_type=='original':
          remove_activities = self.VARS.CONVERTION_ORIGINAL_INVERSE
          keep_activities = self.VARS.CONVERTION_ORIGINAL
-         self.config = self.VARS.get_config(input_size, len(keep_activities), iterations, 100, network_type, conv_f_1, conv_f_2, nn, filter_type)
-         self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, len(keep_activities), remove_activities, None, keep_activities, window)
+         output = 10
+         self.config = self.VARS.get_config(input_size, 10, iterations, 100, network_type, conv_f_1, conv_f_2, nn, filter_type)
+         self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, 10, remove_activities, None, keep_activities, window)
 
       if network_type=='sd':
          remove_activities = self.VARS.CONVERTION_STATIC_DYNAMIC_INVERSE
          keep_activities = self.VARS.CONVERTION_STATIC_DYNAMIC
-         output = 3
+         output = 10
          self.config = self.VARS.get_config(input_size, output, iterations, 100, network_type, conv_f_1, conv_f_2, nn, filter_type)
          self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, output, remove_activities, None, keep_activities, window)
 
@@ -62,15 +63,15 @@ class CNN_MOD_TRAIN(object):
          self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, len(keep_activities), remove_activities, None, keep_activities, window)
 
 
-      self.cnn = CNN_MOD_2.CNN_MOD(self.config)
+      self.cnn = CNN_MOD_4.CNN_MOD(self.config)
       self.cnn.set_data_set(self.data_set)
-      for i in range(0,1):
-         self.cnn.train_network()
+      
+      self.cnn.train_network()
       self.cnn.save_model('models/' + network_type + '_' + str(input_size) + '_' + str(conv_f_1) + '_' + str(conv_f_2) + '_' + str(nn[0]) + '_' + str(nn[1]) + '_' + filter_type)
+      self.cnn.test_network()
 
 
 
-
-cnn_h = CNN_MOD_TRAIN('original', 3000 , "1.0", 600, 20, 40, [200,100], "SAME") 
+cnn_h = CNN_MOD_TRAIN('sd', 1000 , "1.0", 600, 20, 40, [200,100], "VALID") 
 
 

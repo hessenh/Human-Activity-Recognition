@@ -3,6 +3,8 @@ from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier 
 from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import GaussianNB
+from sklearn.ensemble import AdaBoostRegressor
+from sklearn.tree import DecisionTreeRegressor
 import itertools
 import data_features
 import VAR
@@ -10,8 +12,9 @@ from sklearn.externals import joblib
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
+import pandas as pd
 
-def classify(classifier, test, keep_activities_dict = None, remove_activities_dict = None, keep_activities_original_dict = None, remove_activities_original_dict = None):
+def classify_fit(classifier, window_size, keep_activities_dict = None, remove_activities_dict = None, keep_activities_original_dict = None, remove_activities_original_dict = None):
 	VARIABLES = VAR.VARIABLES()
 	# Get data set
 	if keep_activities_dict == None:
@@ -19,11 +22,99 @@ def classify(classifier, test, keep_activities_dict = None, remove_activities_di
 		remove_activities_dict = VARIABLES.CONVERTION_GROUPED_ACTIVITIES_INVERSE
 		keep_activities_original_dict = VARIABLES.CONVERTION_ORIGINAL
 		remove_activities_original_dict = VARIABLES.CONVERTION_ORIGINAL_INVERSE
-		print "Loading data"
-
-	data = data_features.Data_Set(keep_activities_dict, remove_activities_dict, keep_activities_original_dict, remove_activities_original_dict)
+	
+	print "Loading data"
+	data = data_features.Data_Set(keep_activities_dict, remove_activities_dict, keep_activities_original_dict, remove_activities_original_dict, True)
 
 	# Set up classifier
+	clf = select_classifier(classifier)
+
+	# Fit the training data to the labels and create the decision trees
+	print "Training model"
+	clf.fit(data.train_x,data.train_l[0])
+
+	model = classifier + '_' + str(window_size) + '_' + str(keep_activities_dict) + '.pkl'
+	print "Saving model as", model
+	joblib.dump(clf, 'models/'+ model, compress=1) 
+
+	# Take the same decision trees and run it on the test data
+	keep_activities = keep_activities_original_dict
+	score_list = []
+	# Remove duplicates
+	activity_list = list(set(keep_activities.values()))
+	for activity in activity_list:
+		activity_data = data.test_x[data.test_original_l[0] == activity]
+		activity_label = data.test_l[data.test_original_l[0] == activity]
+		activity_score =  clf.score(activity_data, activity_label)
+		score_list.append(activity_score)
+		#print str(activity_score).replace(".",",")
+
+	real = clf.score(data.test_x,data.test_l)
+	overall = sum(score_list) / len(score_list)
+	#print 'Real', str(real).replace(".",",")
+	#print 'Overal', overall
+	return overall, real
+
+
+''' Testing classifier - returns sensitivity for each activity and total accuracy '''
+def classify_test(classifier, window_size, test_type):
+	print "Testing classifier", classifier
+	VARIABLES = VAR.VARIABLES()
+	# Get data set
+
+	keep_activities_dict = VARIABLES.CONVERTION_GROUPED_ACTIVITIES
+	remove_activities_dict = VARIABLES.CONVERTION_GROUPED_ACTIVITIES_INVERSE
+	keep_activities_original_dict = VARIABLES.CONVERTION_ORIGINAL
+	remove_activities_original_dict = VARIABLES.CONVERTION_ORIGINAL_INVERSE
+	print "Loading data"
+	data = data_features.Data_Set(keep_activities_dict, remove_activities_dict, keep_activities_original_dict, remove_activities_original_dict, True)
+
+	# Set up classifier
+	clf = select_classifier(classifier)
+	model = classifier + '_' + str(window_size) + '_' + str(keep_activities_dict)
+	print 'Loading model:', model
+	clf = joblib.load('models/'+ model + '.pkl') 
+
+
+	if test_type == "sensitivity":
+		keep_activities = keep_activities_original_dict
+		
+		# Remove duplicates
+		activity_list = list(set(keep_activities.values()))
+
+
+		for activity in activity_list:
+			activity_data = data.test_x[data.test_original_l[0] == activity]
+			activity_label = data.test_l[data.test_original_l[0] == activity]
+			activity_score =  clf.score(activity_data, activity_label)
+			print str(activity_score).replace(".",",")
+
+		score = clf.score(data.test_x,data.test_l)
+		print 'Total', str(score).replace(".",",")
+
+	elif test_type == "predict_labels":
+		length = len(data.test_x)
+		predictions = np.zeros([length,3])
+		
+		# Iterate over test samples
+		for i in range(0,length):
+			# Get the data point
+			feature = data.test_x.iloc[i]
+			label = data.test_l.iloc[i]
+			prediction = clf.predict_proba(feature)
+			index_of_max_prediction = np.argmax(prediction)
+			predictions[i][0] = index_of_max_prediction + 1
+			predictions[i][1] = prediction[0][index_of_max_prediction]
+			predictions[i][2] = label
+
+		df_predictions = pd.DataFrame(predictions)
+		df_predictions.rename(columns={0: 'prediction', 1: 'probability' , 2: 'label'}, inplace=True)
+		#df_predictions.columns = ["prediction","label"]
+		df_predictions.to_csv("predictions/" + model + ".csv", index=None)
+
+
+
+def select_classifier(classifier):
 	if classifier == 'SVM':
 		clf = svm.SVC()
 	elif classifier == 'NearestCentroid':
@@ -34,50 +125,9 @@ def classify(classifier, test, keep_activities_dict = None, remove_activities_di
 		clf = SGDClassifier(loss="hinge", penalty="l2")
 	elif classifier == 'GNB':
 		clf = GaussianNB()
-	
-	if test:
-		print "test"
-		clf = joblib.load('models/rf.pkl') 
-
-		predicted_activities = np.zeros(18)
-		activity_data = data.test_original_x[data.test_original_l[0] == 3]
-		for i in range(0,len(activity_data)):
-			data_point = activity_data.iloc[i].values
-			prediction = clf.predict_proba(data_point)[0]
-			index = np.argmax(prediction)
-			if prediction[index] > 0:
-				predicted_activities[index] +=1
-		print predicted_activities
-		print sum(predicted_activities), len(activity_data)
-
-		score = clf.score(data.test_x,data.test_l)
-		print 'Total', str(score).replace(".",",")
-		y_pred = clf.predict(data.test_x)
-
-		cm = confusion_matrix(data.test_l, y_pred)
-		plot_confusion_matrix(cm, keep_activities_dict)
-
-	else:
-		# Fit the training data to the labels and create the decision trees
-		clf.fit(data.train_x,data.train_l[0])  
-		joblib.dump(clf, 'models/rf.pkl', compress=1) 
-		# Take the same decision trees and run it on the test data
-		keep_activities = keep_activities_original_dict
-		score_list = []
-		for activity in keep_activities:
-		
-			activity_data = data.test_x[data.test_original_l[0] == keep_activities[activity]]
-			activity_label = data.test_l[data.test_original_l[0] == keep_activities[activity]]
-			activity_score =  clf.score(activity_data, activity_label)
-			score_list.append(activity_score)
-			#print str(activity_score).replace(".",",")
-
-		real = clf.score(data.test_x,data.test_l)
-		overall = sum(score_list) / len(score_list)
-		#print 'Real', str(real).replace(".",",")
-		#print 'Overal', overall
-		return overall, real
-
+	elif classifier == 'AdaBoost':
+		clf = AdaBoostRegressor(DecisionTreeRegressor(max_depth=4), n_estimators=300)
+	return clf
 
 
 def generate_subset(keep_activities, remove_activities, size_of_subsets):
@@ -191,12 +241,12 @@ def main():
 	
 	if subsets:
 		
-		keep_activities = [1,2,3,4,5,6,7,8,10,11,13,14,16]
-		remove_activities = [9,12,15,17]
-		size_of_subset_list = [14]
+		keep_activities = [7,8,13]
+		remove_activities = [1,2,3,4,5,6,9,10,11,12,14,15,16,17]
+		size_of_subset_list = [1,2,3]
 		subset_selector(keep_activities, remove_activities, size_of_subset_list)
 	else:
-		classify('RF', True)
-
+		classify_fit('RF', 1.0)
+		classify_test('RF', 1.0, "sensitivity")
 if __name__ == "__main__":
     main()
