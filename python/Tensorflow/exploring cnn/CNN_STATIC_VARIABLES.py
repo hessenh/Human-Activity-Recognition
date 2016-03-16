@@ -61,7 +61,7 @@ class CNN_STATIC_VARS(object):
 		   'output_size': output_size, # Number of ouptuts
 		   'iteration_size': iterations, # Number of training iterations
 		   'batch_size': batch_size, # Number of samples in each training iteration (batch)
-		   'model_name': model_name + '_' + str(input_size) + '_' + conv_list_formated + neural_list_formated + filter_type,
+		   'model_name': model_name + '_' + str(input_size) + '_' + conv_list_formated + neural_list_formated + filter_type + '_' + str(iterations),
 		   'conv_list': conv_list,
 		   'neural_list': neural_list,
 		   'filter_type': filter_type
@@ -83,8 +83,8 @@ class CNN_STATIC_VARS(object):
 				TEST_SUBJECTS.append(SUBJECTS.pop(r))
 			TRAIN_SUBJECTS = SUBJECTS
 		else:
-			TRAIN_SUBJECTS = ['01A']#, '02A', '04A', '05A', '06A', '08A', '09A', '11A', '12A', '13A', '15A', '16A', '19A', '23A']
-			TEST_SUBJECTS = ['21A']#, '20A', '14A', '18A', '03A', '22A', '10A']
+			TRAIN_SUBJECTS = ['01A', '02A', '04A', '20A', '06A', '08A', '09A', '11A', '12A', '13A', '15A', '16A', '19A', '23A']
+			TEST_SUBJECTS = ['21A', '05A', '14A', '18A', '03A', '22A', '10A']
 		return [TRAIN_SUBJECTS, TEST_SUBJECTS]
 
 def format_list(list_input):
