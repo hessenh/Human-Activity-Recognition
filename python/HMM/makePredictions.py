@@ -10,11 +10,11 @@ class CNN_H(object):
 		subject_set = self.VARS.get_subject_set()
 
 		if network_type == 'original':
-			convertion = self.VARS.CONVERTION_ORIGINAL
-			config = self.VARS.get_config(input_size, self.VARS.len_convertion_list(convertion), index, 100, network_type, conv_f_1, conv_f_2, nn_1, filter_type)
-			print 'Creating data set'
-			self.data_set = input_data_window_large.read_data_sets(subject_set, self.VARS.len_convertion_list(convertion), convertion, None, window)
-		
+			remove_activities = self.VARS.CONVERTION_ORIGINAL_INVERSE
+			keep_activities = self.VARS.CONVERTION_ORIGINAL
+			self.config = self.VARS.get_config(input_size, 10, index, 100, network_type, conv_f_1, conv_f_2, nn_1, filter_type)
+			self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, 10, remove_activities, None, keep_activities, window)
+
 		if network_type == 'sd':
 			convertion = self.VARS.CONVERTION_STATIC_DYNAMIC
 			config = self.VARS.get_config(input_size, self.VARS.len_convertion_list(convertion), index, 100, network_type, conv_f_1, conv_f_2, nn_1, filter_type)
@@ -97,9 +97,9 @@ class CNN_H(object):
 		np.savetxt('predictions/prediction_'+network_type+'_prob.csv', predictions, delimiter=",")
 		
 
-cnn_h = CNN_H('cycling-sitting', 2000, '1.0', 600, 20, 40, [200, 100], "VALID")
+cnn_h = CNN_H('original', 2000, '1.0', 600, 20, 40, [200, 100], "VALID")
 
-print cnn_h.run_network_probability('cycling-sitting',3)
+print cnn_h.run_network_probability('original',10)
 
 
 

@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 import math
+from baum_welch import baum_welch 
+from transMatrix import generateTransMatrix 
 
 
 
@@ -22,6 +24,7 @@ class Viterbi(object):
 		self.actual_labels  = pd.read_csv(path, header=None, sep='\,',engine='python').as_matrix()
 		print '- Loaded actual labels'
 		self.actual_labels_length =  len(self.actual_labels)
+		return self.actual_labels
 
 	def generate_start_probability(self,numOfAct):
 		self.start_probability = {}
@@ -30,28 +33,33 @@ class Viterbi(object):
 		print '- Generated Start Probability'
 
 
-	def generate_transition_probability(self):
-		# Create structure of matrix
+	def generate_transition_probability(self,transition):
+		 # Create structure of matrix
 		self.transition_probability = {}
-		for state0 in self.states:
+		for i in range(0,len(self.states)):
 			temp_dict = {}
-			for state1 in self.states:
-				temp_dict[state1] = 0.0
-			self.transition_probability[state0] = temp_dict
+			for j in range(0,len(self.states)):
+				temp_dict[self.states[j]] = transition[i][j]/np.sum(transition[i])
+			self.transition_probability[self.states[i]] = temp_dict
+		print self.transition_probability
+		#print self.transition_probability
+		 #Update the transition matrix with values
+		#for i in range(0, self.actual_labels_length-1):
+		#	first =  self.states[np.argmax(self.actual_labels[i])]
+		#	sec = self.states[np.argmax(self.actual_labels[i+1])]
+		#	self.transition_probability[first][sec] += 1
 		
-		# Update the transition matrix with values
-		for i in range(0, self.actual_labels_length-1):
-			first =  self.states[np.argmax(self.actual_labels[i])]
-			sec = self.states[np.argmax(self.actual_labels[i+1])]
-			self.transition_probability[first][sec] += 1
-		# Divide the values in the matrix by the length of the observation
+
+		 #Divide the values in the matrix by the length of the observation
 		for d in self.transition_probability:
 			
-			labels = self.actual_labels[:,self.states.index(d)] 
-			labelsCount = np.sum(labels)
+			#labels = self.actual_labels[:,self.states.index(d)] 
+		#	labelsCount = np.sum(labels)
 			for key, value in self.transition_probability[d].items():
-				self.transition_probability[d][key] = np.log(value*1.0 / labelsCount)
-    	print '- Generated Transition Probability'
+				self.transition_probability[d][key] = np.log(value) #/ labelsCount)
+		print self.transition_probability
+		print '- Generated Transition Probability'
+
 
 
 	def generate_observation_probability(self):
@@ -60,7 +68,7 @@ class Viterbi(object):
 		for j in range(0, self.observations_length):#self.observations_length
 			# Do it for evert state
 			for i in range(0,len(self.states)):
-				self.emission_probability[j][i] = self.observations[j][i]  / np.exp(self.start_probability[states[i]])
+				self.emission_probability[j][i] = self.observations[j][i]  / np.exp(self.start_probability[self.states[i]])
 			s = np.sum(self.emission_probability[j])
 			for i in range(0, len(self.states)):
 				
@@ -84,8 +92,9 @@ class Viterbi(object):
 			newPath = {}
 			for y in range(0, len(self.states)):
 				(prob, state) = max((self.V[t-1][y0] + self.transition_probability[y0][self.states[y]] + self.emission_probability[t][y], y0) for y0 in self.states)
-				newPath[self.states[y]] = self.path[state] + [states[y]]
+				newPath[self.states[y]] = self.path[state] + [self.states[y]]
 				self.V[t][self.states[y]] = prob
+
 			self.path = newPath
 
 	def generate_path(self):
@@ -110,34 +119,61 @@ class Viterbi(object):
 
 		print 'Viterbi score:',score_vit / self.actual_labels_length
 		print 'CNN score:',score_cnn / self.actual_labels_length
+		return score_vit / self.actual_labels_length
 
 	def save_viterbi(self,classification):
-		path = v.generate_path()
+		path = self.generate_path()
 		viterbi = []
 		for i in range(0,len(path)):
 			viterbi.append(self.states.index(path[i]))
 			
 		np.savetxt('./predictions/viterbi_' + classification + '.csv', viterbi, delimiter=",")
+		return viterbi
+
+def main():
+	network_type = 'stairs-walk'		
+	predictions = './predictions/prediction_'+network_type+'_prob.csv'
+	actual = './predictions/actual_'+network_type+'_prob.csv'
+	states = ['STAND','SIT']
+	#states = ['WALKING','RUNNING','SHUFFLING','STAIRS (UP)', 'STAIRS (DOWN)', 'STANDING', 'VIGOROUS', 'NON-VIGOROUS']
+	#states = ['STAIRS UP', 'STAIRS DOWN']
+	states = ['STAIRS UP', 'STAIRS DOWN','WALK']
+	#states = ['SHUF', 'STAND','NON-VIGOROUS']
+	#states = ['S','D']
+	#states = ['WALKING','RUNNING','STAIRS (UP)','STAIRS (DOWN)','STANDING','SITTING','LYING','BENDING','CYCLING (SITTING)','CYCLING (STANDING)']
 
 
-network_type = 'cycling-sitting'		
-predictions = './predictions/prediction_'+network_type+'_prob.csv'
-actual = './predictions/actual_'+network_type+'_prob.csv'
-states = ['STAND','SIT']
-#states = ['WALKING','RUNNING','SHUFFLING','STAIRS (UP)', 'STAIRS (DOWN)', 'STANDING', 'VIGOROUS', 'NON-VIGOROUS']
-#states = ['STAIRS UP', 'STAIRS DOWN']
-#states = ['STAIRS UP', 'STAIRS DOWN','WALK']
-states = ['SHUF', 'STAND','NON-VIGOROUS']
-#states = ['S','D']
-#states = ['WALKING','RUNNING','SHUFFLING','STAIRS (UP)','STAIRS (DOWN)','STANDING','SITTING','LYING','TRANSITION','BENDING','PICKING','UNDEFINED','CYCLING (SITTING)','CYCLING (STANDING)','HEEL-DROP','VIGOROUS','NON-VIGOROUS']
-numOfAct = len(states)
-v = Viterbi(states)
-v.load_observations(predictions)
-v.load_actual_labels(actual)
-v.generate_start_probability(numOfAct)
-v.generate_transition_probability()
-v.generate_observation_probability()
-v.run()
-v.generate_path()
-v.get_accuracy()
-v.save_viterbi(network_type)
+	numOfAct = len(states)
+	v = Viterbi(states)
+	v.load_observations(predictions)
+	v.load_actual_labels(actual)
+	v.generate_start_probability(numOfAct)
+
+	#trans = baum_welch(len(states),5,network_type)
+	trans = generateTransMatrix(numOfAct,network_type)
+	#print trans
+
+
+	#v.transition_probability={'STANDING': {'STANDING': 82.0, 'BENDING': 3.0, 'WALKING': 7.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 2.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
+	#'BENDING': {'STANDING': 23.0, 'BENDING': 69.0, 'WALKING': 1.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 1.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
+	#'WALKING': {'STANDING': 14.0, 'BENDING': 1.0, 'WALKING': 78.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 1.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
+	#'CYCLING (SITTING)': {'STANDING': 1.0, 'BENDING': 1.0, 'WALKING':1.0, 'CYCLING (SITTING)': 89.0, 'SITTING': 3.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 1.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
+	#'SITTING': {'STANDING': 1.0, 'BENDING': 1.0, 'WALKING': 1.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 91.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 1.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
+	#'CYCLING (STANDING)': {'STANDING': 1.0, 'BENDING': 1.0, 'WALKING': 1.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 91.0, 'RUNNING': 1.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
+	#'RUNNING': {'STANDING': 2.0, 'BENDING': 1.0, 'WALKING': 6.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 85.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
+	#'STAIRS (UP)': {'STANDING': 1.0, 'BENDING': 1.0, 'WALKING': 1.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 1.0, 'STAIRS (UP)': 91.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
+	#'STAIRS (DOWN)': {'STANDING': 1.0, 'BENDING': 1.0, 'WALKING': 1.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 1.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 91.0, 'LYING': 1.0}, 
+	#'LYING': {'STANDING': 1.0, 'BENDING': 1.0, 'WALKING': 1.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 1.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 91.0}}
+
+
+	v.generate_transition_probability(trans)
+
+
+	v.generate_observation_probability()
+	v.run()
+	v.generate_path()
+	v.get_accuracy()
+	viterbi = v.save_viterbi(network_type)
+	
+if __name__ == "__main__":
+	main()

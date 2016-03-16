@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 #ORIGINAL = './predictions/original.csv'
 
-network_type = 'stand-sit'
+network_type = 'original'
 
 actual = 'predictions/actual_'+network_type+'_prob.csv'
 PREDICTION= 'predictions/prediction_'+network_type+'_prob.csv'
@@ -27,8 +27,8 @@ predictions = df_prediction.values
 viterbi = df_viterbi.values
 
 
-start = 0
-end = 3500
+start = 0#1500
+end = 2000
 
 #original = original[start:end]
 
@@ -65,17 +65,17 @@ plt.figure(1)
 
 plt.subplot(311)
 axes = plt.gca()
-axes.set_ylim([0.9,4.1])
+axes.set_ylim([0.9,10.4])
 plt.plot(actual_max)
 
 plt.subplot(312)
 axes = plt.gca()
-axes.set_ylim([0.9,4.1])
+axes.set_ylim([0.9,10.4])
 plt.plot(predictions_max)
 
 plt.subplot(313)
 axes = plt.gca()
-axes.set_ylim([0.9,4.1])
+axes.set_ylim([0.9,10.4])
 plt.plot(viterbi + 1)
 
 
