@@ -25,7 +25,7 @@ class CNN_FILTER(object):
     self._batch_size = config['batch_size']
     self._model_name = config['model_name']
   
-    filter_x = 35
+    filter_x = 30
     filter_y = 1
     resize_y = 6
     resize_x = 100
@@ -199,8 +199,8 @@ class CNN_FILTER(object):
       total_accuracy += accuracy
       total_accuracy_whole += accuracy * (len(activity_data)*1.0/length_of_data)
 
-    print 'Total accuracy', total_accuracy_whole
-    return total_accuracy / len(activities)
+    print 'Accuracy', str(total_accuracy_whole).replace(".",",")
+    print 'Sensitivity', str(total_accuracy / len(activities)).replace(".",",")
 
   ''' Train network '''
   def train_network(self):
@@ -434,7 +434,7 @@ if __name__ == "__main__":
   remove_activities = VARS.CONVERTION_STATIC_DYNAMIC_INVERSE
   keep_activities = VARS.CONVERTION_STATIC_DYNAMIC
   output = 10
-  config = VARS.get_config(600, output, 3000, 100, 'sd',[10, 20], [200,100], "VALID")
+  config = VARS.get_config(600, output, 3000, 100, 'sd',[20,30], [400, 300, 200], "VALID")
   
 
   if test:
@@ -443,7 +443,7 @@ if __name__ == "__main__":
     cnn = CNN_FILTER(config)
     cnn.set_data_set(data_set)
     cnn.load_model('models/' + model)
-    print cnn.test_network_stepwise()
+    cnn.test_network_stepwise()
 
   else:
     data_set = input_data_window_large.read_data_sets_without_activity(subject_set, output, remove_activities, None, keep_activities, "1.0")
@@ -453,6 +453,6 @@ if __name__ == "__main__":
     cnn.set_data_set(data_set)
     cnn.train_network()
     cnn.save_model('models/' + model)
-    cnn.test_network_stepwise()
+    #cnn.test_network_stepwise()
 
       
