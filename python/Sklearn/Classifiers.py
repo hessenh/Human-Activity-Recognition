@@ -24,7 +24,7 @@ def classify_fit(classifier, window_size, keep_activities_dict = None, remove_ac
 		remove_activities_original_dict = VARIABLES.CONVERTION_ORIGINAL_INVERSE
 	
 	print "Loading data"
-	data = data_features.Data_Set(keep_activities_dict, remove_activities_dict, keep_activities_original_dict, remove_activities_original_dict, False)
+	data = data_features.Data_Set(keep_activities_dict, remove_activities_dict, keep_activities_original_dict, remove_activities_original_dict, True)
 
 	# Set up classifier
 	clf = select_classifier(classifier)
@@ -246,7 +246,7 @@ def main():
 		size_of_subset_list = [1,2,3]
 		subset_selector(keep_activities, remove_activities, size_of_subset_list)
 	else:
-		#classify_fit('RF', 1.0)
-		classify_test('RF', 1.0, "predict_labels")
+		classify_fit('RF', 1.0)
+		classify_test('RF', 1.0, "sensitivity")
 if __name__ == "__main__":
     main()
