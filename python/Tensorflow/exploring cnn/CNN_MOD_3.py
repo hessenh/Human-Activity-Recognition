@@ -26,8 +26,10 @@ class CNN_MOD(object):
     self.nn_1 = config['nn'][0]
     self.nn_2 = config['nn'][1]
     print config
-    filter_x = 25
-    filter_y = 25
+    filter_x = 35
+    filter_y = 6
+    resize_y = 6
+    resize_x = 100
     window = self._input_size / filter_y
 
     '''Placeholders for input and output'''
@@ -35,7 +37,7 @@ class CNN_MOD(object):
     print 'x', self.x.get_shape()
     self.y_ = tf.placeholder("float", shape=[None, self._output_size])
 
-    self.x_image = tf.reshape(self.x, [-1, filter_y, window, 1])
+    self.x_image = tf.reshape(self.x, [-1, resize_y, resize_x, 1])
     print self.x_image.get_shape(), 'X reshaped'
     '''First convolutional layer'''
     self.W_conv1 = self.weight_variable([1, filter_x, 1, self._w_b_c_1], self._model_name + "W_conv1")
@@ -55,11 +57,11 @@ class CNN_MOD(object):
 
     '''Densly conected layer'''
     if FILTER_TYPE == "SAME":
-      self.h_flat = tf.reshape(self.h_conv2, [-1, filter_x * window * self._w_b_c_2])
-      self.W_fc1 = self.weight_variable([filter_x * window * self._w_b_c_2, self.nn_1],self._model_name + 'W_fc1')
+      self.h_flat = tf.reshape(self.h_conv2, [-1, resize_y * resize_x * self._w_b_c_2])
+      self.W_fc1 = self.weight_variable([resize_y * resize_x * self._w_b_c_2, self.nn_1],self._model_name + 'W_fc1')
     else:  
-      self.h_flat = tf.reshape(self.h_conv2, [-1, filter_x * (window-5-5) * self._w_b_c_2])
-      self.W_fc1 = self.weight_variable([filter_x * (window-5-5) * self._w_b_c_2, self._w_b_n_1],self._model_name + 'W_fc1')
+      self.h_flat = tf.reshape(self.h_conv2, [-1, resize_y * (resize_x-filter_x-filter_x+2) * self._w_b_c_2])
+      self.W_fc1 = self.weight_variable([resize_y * (resize_x-filter_x-filter_x+2) * self._w_b_c_2, self._w_b_n_1],self._model_name + 'W_fc1')
     print self.h_flat.get_shape(), 'Output conv'
     print self.W_fc1.get_shape(), 'Neural network input'
     
@@ -68,9 +70,7 @@ class CNN_MOD(object):
     ''' First layer '''
     self.b_fc1 = self.bias_variable([self.nn_1], self._model_name +'b_fc1')
     layer_1 = tf.nn.relu(tf.matmul(self.h_flat, self.W_fc1) + self.b_fc1)
-    #self.h_fc1_drop = tf.nn.dropout(self.h_fc1, self.keep_prob)
-    
-    #layer_1 = tf.nn.relu(tf.add(tf.matmul(self.h_fc1, self.W_fc1), self.b_fc1)) #Hidden layer with RELU activation
+  
     ''' Second layer '''
   
     self.W_fc2 = self.weight_variable([self.nn_1, self.nn_2],self._model_name + 'W_fc2')
@@ -155,7 +155,7 @@ class CNN_MOD(object):
 
   def get_activity_list_accuracy(self, original_data_set, data_set):
     number_of_activities = len(original_data_set.test.labels[0])
-    
+    print number_of_activities
     activity_accuracy = np.zeros(number_of_activities)
     for i in range(0,number_of_activities):
       pos = original_data_set.test.labels[..., i] == 1
@@ -181,5 +181,5 @@ class CNN_MOD(object):
         #print(i,self.sess.run(self.accuracy,feed_dict={self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0}))
 
 
-    print(self.sess.run(self.accuracy,feed_dict={
-      self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0}))
+    #print(self.sess.run(self.accuracy,feed_dict={
+    #  self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0}))

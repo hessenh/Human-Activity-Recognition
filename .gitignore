@@ -19,3 +19,5 @@
 # Tensorflow checkpoint files
 *.ckpt
 
+# Sklearn models
+.pkl

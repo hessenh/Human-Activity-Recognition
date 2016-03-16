@@ -5,6 +5,7 @@
 import input_data_window_large
 import CNN_MOD
 import CNN_MOD_2
+import CNN_MOD_3
 import CNN_STATIC_VARIABLES
 import numpy as np
 
@@ -16,15 +17,16 @@ class CNN_TEST(object):
 
       
       if network_type=='original':
+         output = 10
          remove_activities = self.VARS.CONVERTION_ORIGINAL_INVERSE
          keep_activities = self.VARS.CONVERTION_ORIGINAL
-         self.config = self.VARS.get_config(input_size, len(keep_activities), index, 100, network_type, conv_f_1, conv_f_2, nn, filter_type)
-         self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, len(keep_activities), remove_activities, True, keep_activities, window)
+         self.config = self.VARS.get_config(input_size, 10, index, 100, network_type, conv_f_1, conv_f_2, nn, filter_type)
+         self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, 10, remove_activities, True, keep_activities, window)
 
       if network_type=='sd':
          remove_activities = self.VARS.CONVERTION_STATIC_DYNAMIC_INVERSE
          keep_activities = self.VARS.CONVERTION_STATIC_DYNAMIC
-         output = 3
+         output = 2
          self.config = self.VARS.get_config(input_size, output, index, 100, network_type, conv_f_1, conv_f_2, nn, filter_type)
          self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, output, remove_activities, True, keep_activities, window)
 
@@ -61,7 +63,7 @@ class CNN_TEST(object):
          self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, len(keep_activities), remove_activities, True, keep_activities, window)
 
 
-      self.cnn = CNN_MOD_2.CNN_MOD(self.config)
+      self.cnn = CNN_MOD_3.CNN_MOD(self.config)
       self.cnn.set_data_set(self.data_set)
 
       self.cnn.load_model('models/' + network_type+ '_' + str(input_size) + '_' + str(conv_f_1) + '_' + str(conv_f_2) + '_' + str(nn[0]) + '_' + str(nn[1]) + '_' + filter_type)
@@ -74,8 +76,8 @@ class CNN_TEST(object):
          ''' Get the original data set - 3ee what activities fails '''
          remove_activities = self.VARS.CONVERTION_ORIGINAL_INVERSE
          keep_activities = self.VARS.CONVERTION_ORIGINAL
-         config = self.VARS.get_config(input_size, len(keep_activities), index, 100, network_type, conv_f_1, conv_f_2, nn, filter_type)
-         original_data_set = input_data_window_large.read_data_sets_without_activity(subject_set, len(keep_activities), remove_activities, True, keep_activities, window)
+         config = self.VARS.get_config(input_size, 10, index, 100, network_type, conv_f_1, conv_f_2, nn, filter_type)
+         original_data_set = input_data_window_large.read_data_sets_without_activity(subject_set, 10, remove_activities, True, keep_activities, window)
          ''' Get the act'''
          activity_accuracy = self.cnn.get_activity_list_accuracy(original_data_set, self.data_set)
          for i in range(0, len(activity_accuracy)):
@@ -86,4 +88,4 @@ class CNN_TEST(object):
          print np.argmax(data[1])+1, self.cnn.run_network(data)
       
 
-cnn_h = CNN_TEST('sd', 2000, 3, '1.0', 600, 20, 40, [200,100], "VALID")
+cnn_h = CNN_TEST('sd', 2000, 1, '1.0', 600, 20, 40, [200,100], "VALID")
