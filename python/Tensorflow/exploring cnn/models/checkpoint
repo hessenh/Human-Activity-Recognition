@@ -1,2 +1,2 @@
-model_checkpoint_path: "models/sd_600_conv_10_20_conv_200_100_VALID_3000"
-all_model_checkpoint_paths: "models/sd_600_conv_10_20_conv_200_100_VALID_3000"
+model_checkpoint_path: "models/sd_600_conv_20_30_conv_400_200_VALID_3000"
+all_model_checkpoint_paths: "models/sd_600_conv_20_30_conv_400_200_VALID_3000"

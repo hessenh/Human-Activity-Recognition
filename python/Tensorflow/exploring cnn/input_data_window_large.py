@@ -250,42 +250,45 @@ def read_data_sets_without_activity(subjects_set, output_size, remove_activities
   else:
      # Training data and labels
     train_data, train_labels = extract_labels_and_data(training_subjects, output_size, remove_activities, convert_activties, window)
-    # length of longest activity
-    max_length = 0
-    activities = [0,1,2,3,4,5,6,7,8,9]
-    for activity in activities:
-      activity_length = sum(train_labels[::,activity])
-      if activity_length > max_length:
-        max_length = activity_length
-    print(max_length)
-    train_data_new = np.zeros([max_length * len(activities), 600])
-    train_labels_new = np.zeros([max_length * len(activities), len(activities)])
-    #print(train_labels[0:10], 'old')
-    #print(train_labels_new[0:10], 'new')
+    oversampling = False;
+    if oversampling:
+      # length of longest activity
+      max_length = 0
+      activities = [0,1,2,3,4,5,6,7,8,9]
+      for activity in activities:
+        activity_length = sum(train_labels[::,activity])
+        if activity_length > max_length:
+          max_length = activity_length
+      print(max_length)
+      train_data_new = np.zeros([max_length * len(activities), 600])
+      train_labels_new = np.zeros([max_length * len(activities), len(activities)])
+      #print(train_labels[0:10], 'old')
+      #print(train_labels_new[0:10], 'new')
 
-    for i in range(0,len(activities)):
-      activity_boolean = train_labels[::,i] == 1.0
-      activity_data = train_data[activity_boolean]
-      activity_label = train_labels[activity_boolean]
+      for i in range(0,len(activities)):
+        activity_boolean = train_labels[::,i] == 1.0
+        activity_data = train_data[activity_boolean]
+        activity_label = train_labels[activity_boolean]
 
-      activity_length = len(activity_data)
-      fraction = int(max_length / activity_length) + 1
-      
-      new_activity_data = np.tile(activity_data, (fraction, 1))
-      new_activity_label = np.tile(activity_label, (fraction, 1))
-      new_activity_data = new_activity_data[0:max_length]
-      new_activity_label = new_activity_label[0:max_length]
-      train_data_new[i*max_length:i*max_length+max_length] = new_activity_data
-      train_labels_new[i*max_length:i*max_length+max_length] = new_activity_label
+        activity_length = len(activity_data)
+        fraction = int(max_length / activity_length) + 1
+        
+        new_activity_data = np.tile(activity_data, (fraction, 1))
+        new_activity_label = np.tile(activity_label, (fraction, 1))
+        new_activity_data = new_activity_data[0:max_length]
+        new_activity_label = new_activity_label[0:max_length]
+        train_data_new[i*max_length:i*max_length+max_length] = new_activity_data
+        train_labels_new[i*max_length:i*max_length+max_length] = new_activity_label
 
-    for activity in activities:
-      activity_length = sum(train_labels_new[::,activity])
-      print(activity_length)
-    # Testing data and labels
+      for activity in activities:
+        activity_length = sum(train_labels_new[::,activity])
+        print(activity_length)
+      # Testing data and labels
+      train_data = train_data_new
+      train_labels = train_labels_new
     test_data, test_labels = extract_labels_and_data(test_subjects, output_size, remove_activities, convert_activties, window)
-
     # Define training and testing data sets
-    data_sets.train = DataSet(train_data_new, train_labels_new)
+    data_sets.train = DataSet(train_data, train_labels)
     data_sets.test = DataSet(test_data, test_labels)
 
   return data_sets
