@@ -193,9 +193,15 @@ class CNN_FILTER(object):
       activity_boolean = self._data_set.test.labels[::,activity] == 1.0
       activity_data = self._data_set.test.data[activity_boolean]
       activity_label = self._data_set.test.labels[activity_boolean]
-      accuracy = self.sess.run(self.accuracy,feed_dict={
-        self.x: activity_data, self.y_: activity_label, self.keep_prob: 1.0})
-      print activity+1, accuracy
+      length_of_temp_step = len(activity_data) / 10
+      temp_score = 0.0
+      for i in range(0, 10):
+        temp_data = activity_data[i*length_of_temp_step:i*length_of_temp_step+length_of_temp_step]
+        temp_label = activity_label[i*length_of_temp_step:i*length_of_temp_step + length_of_temp_step]
+        temp_score += self.sess.run(self.accuracy,feed_dict={
+          self.x: temp_data, self.y_: temp_label, self.keep_prob: 1.0})
+      accuracy = temp_score / 10
+      print str(accuracy).replace(".",",")
       total_accuracy += accuracy
       total_accuracy_whole += accuracy * (len(activity_data)*1.0/length_of_data)
 
@@ -210,6 +216,10 @@ class CNN_FILTER(object):
     for i in range(self._iteration_size):
       batch = self._data_set.train.next_batch(self._batch_size)
       self.sess.run(self.train_step, feed_dict={self.x: batch[0], self.y_: batch[1], self.keep_prob: 0.5})
+      iteration_list = [1000,1500,3000,4000,5000]
+      #if i in iteration_list:
+      #  print i, "Test network stepwise"
+      #  self.test_network_stepwise()
       #if i%100 == 0:
         #print i, 'Iteration'
         #print(i,self.sess.run(self.accuracy,feed_dict={self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0}))
@@ -419,27 +429,25 @@ class CNN_FILTER_WITH_POOLING(object):
     for i in range(self._iteration_size):
       batch = self._data_set.train.next_batch(self._batch_size)
       self.sess.run(self.train_step, feed_dict={self.x: batch[0], self.y_: batch[1], self.keep_prob: 0.5})
-      #if i%100 == 0:
-        #print i, 'Iteration'
         #print(i,self.sess.run(self.accuracy,feed_dict={self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0}))
-
     #print(self.sess.run(self.accuracy,feed_dict={
      # self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0}))
 
 
 if __name__ == "__main__":
-  test = False
+  test = True
   VARS = CNN_STATIC_VARIABLES.CNN_STATIC_VARS()
   subject_set = VARS.get_subject_set(False)  
   remove_activities = VARS.CONVERTION_STATIC_DYNAMIC_INVERSE
   keep_activities = VARS.CONVERTION_STATIC_DYNAMIC
   output = 10
-  config = VARS.get_config(600, output, 3000, 100, 'sd',[20,30], [400, 300, 200], "VALID")
+  config = VARS.get_config(600, output, 20000, 100, 'sd',[20,40], [1500], "VALID")
   
 
   if test:
     data_set = input_data_window_large.read_data_sets_without_activity([['01A'],subject_set[1]], output, remove_activities, None, keep_activities, "1.0")
     model = config['model_name']
+    print model
     cnn = CNN_FILTER(config)
     cnn.set_data_set(data_set)
     cnn.load_model('models/' + model)
