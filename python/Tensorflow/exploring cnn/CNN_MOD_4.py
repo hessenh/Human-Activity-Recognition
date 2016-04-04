@@ -193,6 +193,7 @@ class CNN_FILTER(object):
       activity_boolean = self._data_set.test.labels[::,activity] == 1.0
       activity_data = self._data_set.test.data[activity_boolean]
       activity_label = self._data_set.test.labels[activity_boolean]
+      #print len(activity_data)
       length_of_temp_step = len(activity_data) / 10
       temp_score = 0.0
       for i in range(0, 10):
@@ -455,7 +456,7 @@ if __name__ == "__main__":
 
   else:
     data_set = input_data_window_large.read_data_sets_without_activity(subject_set, output, remove_activities, None, keep_activities, "1.0")
-    data_set.train.shuffle_data_set()
+    #data_set.train.shuffle_data_set()
     model = config['model_name']
     cnn = CNN_FILTER(config)
     cnn.set_data_set(data_set)
