@@ -77,12 +77,19 @@ def extract_labels(subjects, output_size, change_labels, window):
   return train_label
 
 
-def extract_merged_labels_and_data(subject, output_size, remove_activities, convert_activties, window):
+def extract_merged_labels_and_data(subject, output_size, remove_activities, convert_activties, window, remove_messy_windows):
   filepath = '../../../../Prosjektoppgave/Notebook/data/'+subject+'/DATA_WINDOW/'+window+'/ORIGINAL/'
   files =   [
   'Axivity_BACK_Back_X.csv', 'Axivity_THIGH_Right_Y.csv', 
   'Axivity_BACK_Back_Y.csv', 'Axivity_THIGH_Right_Z.csv', 
   'Axivity_BACK_Back_Z.csv', 'Axivity_THIGH_Right_X.csv']
+
+  if remove_messy_windows:
+    files =   [
+    'Axivity_BACK_Back_X_REMOVED_MESSY_WINDOWS.csv', 'Axivity_THIGH_Right_Y_REMOVED_MESSY_WINDOWS.csv', 
+    'Axivity_BACK_Back_Y_REMOVED_MESSY_WINDOWS.csv', 'Axivity_THIGH_Right_Z_REMOVED_MESSY_WINDOWS.csv', 
+    'Axivity_BACK_Back_Z_REMOVED_MESSY_WINDOWS.csv', 'Axivity_THIGH_Right_X_REMOVED_MESSY_WINDOWS.csv']
+
   df_0 = pd.read_csv(filepath+files[0], header=None, sep='\,',engine='python')
   df_1 = pd.read_csv(filepath+files[1], header=None, sep='\,',engine='python')
   df_2 = pd.read_csv(filepath+files[2], header=None, sep='\,',engine='python')
@@ -91,14 +98,15 @@ def extract_merged_labels_and_data(subject, output_size, remove_activities, conv
   df_5 = pd.read_csv(filepath+files[5], header=None, sep='\,',engine='python')
 
   filepath = '../../../../Prosjektoppgave/Notebook/data/'+subject+'/DATA_WINDOW/'+window+'/ORIGINAL/GoPro_LAB_All_L.csv'
+  if remove_messy_windows:
+    filepath = '../../../../Prosjektoppgave/Notebook/data/'+subject+'/DATA_WINDOW/'+window+'/ORIGINAL/GoPro_LAB_All_L_REMOVED_MESSY_WINDOWS.csv'
 
   df_labels = pd.read_csv(filepath, header=None, sep='\,',engine='python')
   df_labels.columns = ['labels']
   df_data = pd.concat([df_0, df_1, df_2, df_3, df_4, df_5, df_labels],axis=1)
 
-  if remove_activities:
-    for key, value in remove_activities.iteritems():
-      df_data =  df_data[df_data['labels'] != key]
+  for key, value in remove_activities.iteritems():
+     df_data =  df_data[df_data['labels'] != key]
   df_labels = df_data['labels']
   df_data = df_data.drop('labels', 1)
 
@@ -109,19 +117,21 @@ def extract_merged_labels_and_data(subject, output_size, remove_activities, conv
   for i in range(len(df_labels)):
     a = df_labels.iloc[i]
     n =  np.zeros(output_size)
+    #print(a,n,convert_activties)
     n[convert_activties.get(a)-1] = 1
     m.append(n)
+
   df_labels = pd.DataFrame(m)
 
   return df_data.as_matrix(columns=None), df_labels.values
 
-def extract_labels_and_data(subjects, output_size, remove_activities, convert_activties, window):
+def extract_labels_and_data(subjects, output_size, remove_activities, convert_activties, window, remove_messy_windows):
   print('Extracting label and data set from', subjects)
-  data, labels = extract_merged_labels_and_data(subjects[0], output_size, remove_activities, convert_activties, window)
+  data, labels = extract_merged_labels_and_data(subjects[0], output_size, remove_activities, convert_activties, window, remove_messy_windows)
 
   # Iterate over all subjects
   for i in range(1,len(subjects)):
-    sub_data, sub_labels = extract_merged_labels_and_data(subjects[i], output_size, remove_activities, convert_activties, window)
+    sub_data, sub_labels = extract_merged_labels_and_data(subjects[i], output_size, remove_activities, convert_activties, window, remove_messy_windows)
 
     # Append data and labels
     data = np.concatenate((data,sub_data ), axis=0)
@@ -232,11 +242,17 @@ class DataSet(object):
 
 def move_data_from_test_to_train(prediction_indices, data_set):
   correct_relabeled = 0
+  print(data_set.train._data.shape)
+  new_data = np.zeros([len(prediction_indices), 600])
+  new_label = np.zeros([len(prediction_indices),10])
+  delete_indices = np.zeros(len(prediction_indices))
+
   ''' Sort data based on index '''
   prediction_indices = sorted(prediction_indices, key=lambda row: row[0])
   for i in range(len(prediction_indices)-1,-1,-1):
-
     data = data_set.test._data[prediction_indices[i][0]]
+    
+
     predictions = []
     for j in prediction_indices[i][1]:
       predictions.append(np.argmax(j))
@@ -257,23 +273,31 @@ def move_data_from_test_to_train(prediction_indices, data_set):
     # Create label
     label = np.zeros(len(data_set.train._labels[0]))
     label[acitivity] = 1.0
-    
+
+
+    new_data[i] = data
+    new_label[i] = label
+    delete_indices[i] = prediction_indices[i][0]
     #print(temp_label, prediction_indices[i][0])
     # Count correct relabeling
     if np.argmax(label) == np.argmax(data_set.test._labels[prediction_indices[i][0]]):
       correct_relabeled += 1
     #else:
     #  print(np.argmax(label),np.argmax(data_set.test._labels[prediction_indices[i][0]]))
-   
-    # Insert data and label into train data
-    data_set.train._data = np.insert(data_set.train._data, len(data_set.train._data), data, axis=0)
-    data_set.train._labels = np.insert(data_set.train._labels, len(data_set.train._labels), label, axis=0)
+    
+  print('Insert new samples')
+  # Insert data and label into train data
+  data_set.train._data = np.insert(data_set.train._data, len(data_set.train._data), new_data, axis=0)
+  data_set.train._labels = np.insert(data_set.train._labels, len(data_set.train._labels), new_label, axis=0)
+  print('Delete new samples')
+  # Delete data and label from test subject
+  data_set.test._data = np.delete(data_set.test._data, delete_indices, axis=0)
+  data_set.test._labels = np.delete(data_set.test._labels, delete_indices, axis=0)
 
-    # Delete data and label from test subject
-    data_set.test._data = np.delete(data_set.test._data, prediction_indices[i][0], axis=0)
-    data_set.test._labels = np.delete(data_set.test._labels, prediction_indices[i][0], axis=0)
-  
+
+  print('Shuffle new training data')
   data_set.train.shuffle_data_set()
+
   if correct_relabeled > 0:
     print('Correct relabel', correct_relabeled*1.0 / len(prediction_indices), "majority", majority)
   return data_set
@@ -331,10 +355,17 @@ def read_data_sets(subjects_set, output_size, change_labels, load_model, window)
   return data_sets
 
 
-def read_data_sets_without_activity(subjects_set, output_size, train_activities, test_activities, load_model, convert_activties, window):
+def read_data_sets_without_activity(subjects_set, output_size, remove_activities, load_model, convert_activties, window):
   training_subjects = subjects_set[0]
   test_subjects = subjects_set[1]
-  
+  remove_messy_windows = False
+  oversampling = True
+  validation_set = True
+
+  print('Remove messy windows', remove_messy_windows)
+  print('Oversampling', oversampling)
+  print('Validation set', validation_set)
+
   class DataSets(object):
     pass
   data_sets = DataSets()
@@ -342,21 +373,70 @@ def read_data_sets_without_activity(subjects_set, output_size, train_activities,
   # If the model is for testing
   if load_model:
     # Testing data and labels
-    test_data, test_labels = extract_labels_and_data(test_subjects, output_size, remove_activities, convert_activties, window)
+    test_data, test_labels = extract_labels_and_data(test_subjects, output_size, remove_activities, convert_activties, window, remove_messy_windows)
 
     # Define testing data sets
     data_sets.test = DataSet(test_data, test_labels)
 
   else:
      # Training data and labels
-    train_data, train_labels = extract_labels_and_data(training_subjects, output_size, remove_activities, convert_activties, window)
+    train_data, train_labels = extract_labels_and_data(training_subjects, output_size, remove_activities, convert_activties, window, remove_messy_windows)
+    
+    if oversampling:
+      # length of longest activity
+      max_length = 0
+      activities = [0,1,2,3,4,5,6,7,8,9]
+      for activity in activities:
+        activity_length = sum(train_labels[::,activity])
+        if activity_length > max_length:
+          max_length = activity_length
+      print(max_length)
+      train_data_new = np.zeros([max_length * len(activities), 600])
+      train_labels_new = np.zeros([max_length * len(activities), len(activities)])
+      #print(train_labels[0:10], 'old')
+      #print(train_labels_new[0:10], 'new')
 
-    # Testing data and labels
-    test_data, test_labels = extract_labels_and_data(test_subjects, output_size, remove_activities, convert_activties, window)
+      for i in range(0,len(activities)):
+        activity_boolean = train_labels[::,i] == 1.0
+        activity_data = train_data[activity_boolean]
+        activity_label = train_labels[activity_boolean]
 
-    # Define training and testing data sets
-    data_sets.train = DataSet(train_data, train_labels)
-    data_sets.test = DataSet(test_data, test_labels)
+        activity_length = len(activity_data)
+        fraction = int(max_length / activity_length) + 1
+        
+        new_activity_data = np.tile(activity_data, (fraction, 1))
+        new_activity_label = np.tile(activity_label, (fraction, 1))
+        new_activity_data = new_activity_data[0:max_length]
+        new_activity_label = new_activity_label[0:max_length]
+        train_data_new[i*max_length:i*max_length+max_length] = new_activity_data
+        train_labels_new[i*max_length:i*max_length+max_length] = new_activity_label
+
+      for activity in activities:
+        activity_length = sum(train_labels_new[::,activity])
+        print(activity_length)
+      # Testing data and labels
+      train_data = train_data_new
+      train_labels = train_labels_new
+    test_data, test_labels = extract_labels_and_data(test_subjects, output_size, remove_activities, convert_activties, window, False)
+
+    if validation_set:
+      #Split test data into a test and validation part
+      indices = np.arange(len(test_data))
+      idx = np.random.choice(indices, len(test_data) / 2, replace=False)
+      idx2 = np.setdiff1d(indices, idx)
+      # Validation data
+      validation_data = test_data[idx]
+      validation_labels = test_labels[idx]
+      # Test data
+      test_data = test_data[idx2]
+      test_labels = test_labels[idx2]
+      
+      data_sets.validation = DataSet(validation_data, validation_labels)
+
+  # Define training and testing data sets
+  data_sets.train = DataSet(train_data, train_labels)
+  data_sets.test = DataSet(test_data, test_labels)
+
 
   return data_sets
 
