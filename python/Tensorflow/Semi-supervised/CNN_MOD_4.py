@@ -102,7 +102,8 @@ class CNN_FILTER(object):
 
 
     self.cross_entropy = -tf.reduce_sum(self.y_*tf.log(tf.clip_by_value(self.y_conv,1e-10,1.0)))
-    self.train_step = tf.train.AdamOptimizer(1e-4).minimize(self.cross_entropy)
+    self.train_step = tf.train.AdamOptimizer(1e-6).minimize(self.cross_entropy)
+    self.learning_rate = tf.train.AdamOptimizer()
     self.correct_prediction = tf.equal(tf.argmax(self.y_conv,1), tf.argmax(self.y_,1))
     self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, "float"))
 
@@ -132,6 +133,7 @@ class CNN_FILTER(object):
 
   def load_model(self, model):
     self.sess = tf.Session()
+    self.sess.run(self.init_op)
     # Get last name. Path could be modles/test, so splitting on "/" and retreiving "test"
     model_name = model.split('/')
     model_name = model_name[-1]
@@ -182,7 +184,7 @@ class CNN_FILTER(object):
     return activity_accuracy
 
   def test_network_stepwise(self):
-    length_of_data = len(self._data_set.test.data)
+    length_of_data = len(self._data_set.validation.data)
     #print length_of_data
     activities = [0,1,2,3,4,5,6,7,8,9]
     total_accuracy = 0.0
@@ -190,9 +192,9 @@ class CNN_FILTER(object):
     for activity in activities:
       #step = length_of_data / 10
       
-      activity_boolean = self._data_set.test.labels[::,activity] == 1.0
-      activity_data = self._data_set.test.data[activity_boolean]
-      activity_label = self._data_set.test.labels[activity_boolean]
+      activity_boolean = self._data_set.validation.labels[::,activity] == 1.0
+      activity_data = self._data_set.validation.data[activity_boolean]
+      activity_label = self._data_set.validation.labels[activity_boolean]
       #print len(activity_data)
       length_of_temp_step = len(activity_data) / 10
       temp_score = 0.0
@@ -227,7 +229,10 @@ class CNN_FILTER(object):
 
     #self.sess.run(self.accuracy,feed_dict={
      #self.x: self._data_set.test.data, self.y_: self._data_set.test.labels, self.keep_prob: 1.0})
-
+  def continue_training(self, iteratons):
+    for i in range(0,100):
+      batch = self._data_set.train.next_batch(self._batch_size)
+      self.sess.run(self.train_step, feed_dict={self.x: batch[0], self.y_: batch[1], self.keep_prob: 0.5})
 
 class CNN_FILTER_WITH_POOLING(object):
   def __init__(self, config):
