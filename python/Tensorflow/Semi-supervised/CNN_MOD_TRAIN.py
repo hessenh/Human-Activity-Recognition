@@ -30,17 +30,18 @@ class CNN_SS_TRAIN(object):
 
       ss_iterator = 0
       num_samples = 0
-      while ss_iterator < 10:   
+      while ss_iterator < 3:   
          prediction_steps = 10
          test_set_length = len(self.data_set.test._labels)
          threshold = 0.99
          # Returns an n-long array with random integer
          # integer range, length of array
-         test_indecies = np.random.choice(test_set_length, 1000, replace=False)
+         pool_size = 1000
+         test_indecies = np.random.choice(test_set_length, pool_size, replace=False)
 
          number_of_samples = 40
          #print 'Predicting'
-         prediction_indices = np.zeros([test_set_length, 3])
+         prediction_indices = np.zeros([pool_size, 3])
          final_prediction_indices = np.zeros([number_of_samples*10,3])
          for i in range(0, len(test_indecies)):
             # Get the data instance
@@ -52,27 +53,42 @@ class CNN_SS_TRAIN(object):
                prediction = networks[j].run_network_return_probability([[data]])[0]
                predictions[j] = prediction
 
-            # Check if the majority of the predictions are over the threshold
-            #if np.sum(predictions > threshold) >=  1:# np.ceil(number_of_classifiers*1.0 / 2):
-            #   prediction_indices.append([test_indecies[i], predictions])
             activity = np.argmax(predictions)
             confidens = prediction[activity]
 
             prediction_indices[i] = [test_indecies[i], activity, confidens]
-            #prediction_indices.append([test_indecies[i], predictions])
 
-         ''' Select the N most confident samples from each class '''
          final_prediction_indices = []
-         activity_list = [0,1,2,3,4,5,6,7,8,9]
-         # Sort
-         prediction_indices = prediction_indices[prediction_indices[:,2].argsort()]
-         for i in range(0, len(activity_list)):
-            #print prediction_indices[prediction_indices[:,1] == activity]
-            top_predictions = prediction_indices[prediction_indices[:,1] == activity_list[i]][-number_of_samples:]
-            for item in top_predictions:
-               final_prediction_indices.append(item)
+         equal_pool_size = True
+         threshold_subset = False
+         highest_confident = False
 
-           
+         if equal_pool_size:
+            ''' Select the N most confident samples from each class '''
+            activity_list = [0,1,2,3,4,5,6,7,8,9]
+            # Sort
+            prediction_indices = prediction_indices[prediction_indices[:,2].argsort()]
+            for i in range(0, len(activity_list)):
+               #print prediction_indices[prediction_indices[:,1] == activity]
+               top_predictions = prediction_indices[prediction_indices[:,1] == activity_list[i]][-number_of_samples:]
+               for item in top_predictions:
+                  final_prediction_indices.append(item)
+         if threshold_subset:
+            ''' Select random subsample with confidens over threshold'''
+            prediction_indices = prediction_indices[prediction_indices[:,2] >= 0.8]
+            prediction_indices = prediction_indices[prediction_indices[:,2] >= 0.9]
+            print 'Number of prediction instances', len(prediction_indices)
+            subset = np.random.choice(len(prediction_indices), number_of_samples*10, replace=False)
+            final_prediction_indices = prediction_indices[subset]
+
+         if highest_confident:
+            ''' Select the top n samples'''
+            # Sort
+            prediction_indices = prediction_indices[prediction_indices[:,2].argsort()]
+            final_prediction_indices = prediction_indices[-number_of_samples*10:]
+            print final_prediction_indices[0]
+
+
          print 'Number of new instances',len(final_prediction_indices)
          num_samples += len(final_prediction_indices)
          self.data_set = data_generator.move_data_from_test_to_train(final_prediction_indices, self.data_set)
@@ -80,7 +96,9 @@ class CNN_SS_TRAIN(object):
          activity_accuracy = np.zeros(len(self.data_set.validation.labels[0]))
          for cnn in networks:
             cnn.set_data_set(self.data_set)
-            cnn.continue_training(len(final_prediction_indices)/100)
+            train_iterations = 400 
+            print 'Number of training iterations', train_iterations
+            cnn.continue_training(train_iterations)
             cnn.test_network_stepwise()
          ss_iterator +=1       
 

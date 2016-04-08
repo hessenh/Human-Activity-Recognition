@@ -37,11 +37,6 @@ for i in range(0,len(a)):
 
 
 predictions =  predictions[predictions[:,2].argsort()]
+predictions = predictions[predictions[:,2] > 0.9]
+predictions = predictions[predictions[:,2] < 0.95]
 print predictions
-predictions = predictions[predictions[:,1] == 0]
-print predictions
-
-
-a = np.arange(10)
-
-print np.append(a,a)
