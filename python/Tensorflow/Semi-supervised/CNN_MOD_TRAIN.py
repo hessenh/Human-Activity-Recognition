@@ -96,7 +96,7 @@ class CNN_SS_TRAIN(object):
          activity_accuracy = np.zeros(len(self.data_set.validation.labels[0]))
          for cnn in networks:
             cnn.set_data_set(self.data_set)
-            train_iterations = 400 
+            train_iterations = 400 * 4
             print 'Number of training iterations', train_iterations
             cnn.continue_training(train_iterations)
             cnn.test_network_stepwise()
