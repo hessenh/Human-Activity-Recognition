@@ -275,8 +275,9 @@ def move_data_from_test_to_train(prediction_indices, data_set):
     # Create label
     label = np.zeros(len(data_set.train._labels[0]))
     label[activity] = 1.0
-
-
+    
+    # Self learning
+    label = data_set.test._labels[prediction_indices[i][0]]
     new_data[i] = data
     new_label[i] = label
     delete_indices[i] = prediction_indices[i][0]
@@ -286,7 +287,7 @@ def move_data_from_test_to_train(prediction_indices, data_set):
       correct_relabeled += 1
     #else:
     #  print(np.argmax(label),np.argmax(data_set.test._labels[prediction_indices[i][0]]))
-    
+  print("Self learning!!!!!")
   print('Insert new samples')
   # Insert data and label into train data
   #data_set.train._data = np.insert(data_set.train._data, len(data_set.train._data), new_data, axis=0)
