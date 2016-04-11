@@ -37,6 +37,6 @@ for i in range(0,len(a)):
 
 
 predictions =  predictions[predictions[:,2].argsort()]
-predictions = predictions[predictions[:,2] > 0.9]
-predictions = predictions[predictions[:,2] < 0.95]
 print predictions
+
+print predictions[:2]

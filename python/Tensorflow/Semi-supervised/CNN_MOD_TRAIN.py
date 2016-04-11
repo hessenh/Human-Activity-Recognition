@@ -59,10 +59,10 @@ class CNN_SS_TRAIN(object):
             prediction_indices[i] = [test_indecies[i], activity, confidens]
 
          final_prediction_indices = []
-         equal_pool_size = True
+         equal_pool_size = False
          threshold_subset = False
          highest_confident = False
-
+         self_learning = True
          if equal_pool_size:
             ''' Select the N most confident samples from each class '''
             activity_list = [0,1,2,3,4,5,6,7,8,9]
@@ -87,6 +87,9 @@ class CNN_SS_TRAIN(object):
             prediction_indices = prediction_indices[prediction_indices[:,2].argsort()]
             final_prediction_indices = prediction_indices[-number_of_samples*10:]
             print final_prediction_indices[0]
+         if self_learning:
+            prediction_indices = prediction_indices[prediction_indices[:,2].argsort()]
+            final_prediction_indices = prediction_indices[:number_of_samples*10]
 
 
          print 'Number of new instances',len(final_prediction_indices)
@@ -96,7 +99,8 @@ class CNN_SS_TRAIN(object):
          activity_accuracy = np.zeros(len(self.data_set.validation.labels[0]))
          for cnn in networks:
             cnn.set_data_set(self.data_set)
-            train_iterations = 400 * 4
+            train_iterations = 400 *4
+
             print 'Number of training iterations', train_iterations
             cnn.continue_training(train_iterations)
             cnn.test_network_stepwise()
