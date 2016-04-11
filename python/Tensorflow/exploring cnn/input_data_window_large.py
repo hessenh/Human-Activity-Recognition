@@ -76,12 +76,19 @@ def extract_labels(subjects, output_size, change_labels, window):
   return train_label
 
 
-def extract_merged_labels_and_data(subject, output_size, remove_activities, convert_activties, window):
+def extract_merged_labels_and_data(subject, output_size, remove_activities, convert_activties, window, remove_messy_windows):
   filepath = '../../../../Prosjektoppgave/Notebook/data/'+subject+'/DATA_WINDOW/'+window+'/ORIGINAL/'
   files =   [
   'Axivity_BACK_Back_X.csv', 'Axivity_THIGH_Right_Y.csv', 
   'Axivity_BACK_Back_Y.csv', 'Axivity_THIGH_Right_Z.csv', 
   'Axivity_BACK_Back_Z.csv', 'Axivity_THIGH_Right_X.csv']
+
+  if remove_messy_windows:
+    files =   [
+    'Axivity_BACK_Back_X_REMOVED_MESSY_WINDOWS.csv', 'Axivity_THIGH_Right_Y_REMOVED_MESSY_WINDOWS.csv', 
+    'Axivity_BACK_Back_Y_REMOVED_MESSY_WINDOWS.csv', 'Axivity_THIGH_Right_Z_REMOVED_MESSY_WINDOWS.csv', 
+    'Axivity_BACK_Back_Z_REMOVED_MESSY_WINDOWS.csv', 'Axivity_THIGH_Right_X_REMOVED_MESSY_WINDOWS.csv']
+
   df_0 = pd.read_csv(filepath+files[0], header=None, sep='\,',engine='python')
   df_1 = pd.read_csv(filepath+files[1], header=None, sep='\,',engine='python')
   df_2 = pd.read_csv(filepath+files[2], header=None, sep='\,',engine='python')
@@ -90,6 +97,8 @@ def extract_merged_labels_and_data(subject, output_size, remove_activities, conv
   df_5 = pd.read_csv(filepath+files[5], header=None, sep='\,',engine='python')
 
   filepath = '../../../../Prosjektoppgave/Notebook/data/'+subject+'/DATA_WINDOW/'+window+'/ORIGINAL/GoPro_LAB_All_L.csv'
+  if remove_messy_windows:
+    filepath = '../../../../Prosjektoppgave/Notebook/data/'+subject+'/DATA_WINDOW/'+window+'/ORIGINAL/GoPro_LAB_All_L_REMOVED_MESSY_WINDOWS.csv'
 
   df_labels = pd.read_csv(filepath, header=None, sep='\,',engine='python')
   df_labels.columns = ['labels']
@@ -115,13 +124,13 @@ def extract_merged_labels_and_data(subject, output_size, remove_activities, conv
 
   return df_data.as_matrix(columns=None), df_labels.values
 
-def extract_labels_and_data(subjects, output_size, remove_activities, convert_activties, window):
+def extract_labels_and_data(subjects, output_size, remove_activities, convert_activties, window, remove_messy_windows):
   print('Extracting label and data set from', subjects)
-  data, labels = extract_merged_labels_and_data(subjects[0], output_size, remove_activities, convert_activties, window)
+  data, labels = extract_merged_labels_and_data(subjects[0], output_size, remove_activities, convert_activties, window, remove_messy_windows)
 
   # Iterate over all subjects
   for i in range(1,len(subjects)):
-    sub_data, sub_labels = extract_merged_labels_and_data(subjects[i], output_size, remove_activities, convert_activties, window)
+    sub_data, sub_labels = extract_merged_labels_and_data(subjects[i], output_size, remove_activities, convert_activties, window, remove_messy_windows)
 
     # Append data and labels
     data = np.concatenate((data,sub_data ), axis=0)
@@ -234,7 +243,11 @@ def read_data_sets(subjects_set, output_size, change_labels, load_model, window)
 def read_data_sets_without_activity(subjects_set, output_size, remove_activities, load_model, convert_activties, window):
   training_subjects = subjects_set[0]
   test_subjects = subjects_set[1]
-  
+  remove_messy_windows = True
+  oversampling = True
+  print('Remove messy windows', remove_messy_windows)
+  print('Oversampling', oversampling)
+
   class DataSets(object):
     pass
   data_sets = DataSets()
@@ -242,15 +255,15 @@ def read_data_sets_without_activity(subjects_set, output_size, remove_activities
   # If the model is for testing
   if load_model:
     # Testing data and labels
-    test_data, test_labels = extract_labels_and_data(test_subjects, output_size, remove_activities, convert_activties, window)
+    test_data, test_labels = extract_labels_and_data(test_subjects, output_size, remove_activities, convert_activties, window, remove_messy_windows)
 
     # Define testing data sets
     data_sets.test = DataSet(test_data, test_labels)
 
   else:
      # Training data and labels
-    train_data, train_labels = extract_labels_and_data(training_subjects, output_size, remove_activities, convert_activties, window)
-    oversampling = False;
+    train_data, train_labels = extract_labels_and_data(training_subjects, output_size, remove_activities, convert_activties, window, remove_messy_windows)
+    
     if oversampling:
       # length of longest activity
       max_length = 0
@@ -286,7 +299,7 @@ def read_data_sets_without_activity(subjects_set, output_size, remove_activities
       # Testing data and labels
       train_data = train_data_new
       train_labels = train_labels_new
-    test_data, test_labels = extract_labels_and_data(test_subjects, output_size, remove_activities, convert_activties, window)
+    test_data, test_labels = extract_labels_and_data(test_subjects, output_size, remove_activities, convert_activties, window, False)
     # Define training and testing data sets
     data_sets.train = DataSet(train_data, train_labels)
     data_sets.test = DataSet(test_data, test_labels)

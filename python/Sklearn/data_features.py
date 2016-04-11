@@ -25,6 +25,9 @@ class Data_Set(object):
     train = read_subjects(VARIABLES.TRAIN_SUBJECTS, window, keep_activities, remove_activities, testing)
     self.train_x = train[0]
     self.train_l = train[1]
+    shuffled_data_set = shuffle_data_set(self.train_x, self.train_l)
+    self.train_x = shuffled_data_set[0]
+    self.train_l = shuffled_data_set[1]
     
     #print "Loading test data"
     test = read_subjects(VARIABLES.TEST_SUBJECTS, window, keep_activities, remove_activities, testing)
@@ -38,6 +41,16 @@ class Data_Set(object):
     test_original = read_subjects(VARIABLES.TEST_SUBJECTS, window, keep_activities_original_dict, remove_activities_original_dict, testing)
     self.test_original_x = test_original[0]
     self.test_original_l = test_original[1]
+
+
+def shuffle_data_set(data, labels):
+  perm = np.arange(len(data))
+  np.random.shuffle(perm)
+  data = data.as_matrix()[perm]
+  labels = labels.as_matrix()[perm]
+  data = pd.DataFrame(data)
+  labels = pd.DataFrame(labels)
+  return data, labels
 
 
 def read_subjects(subjects, window,keep_activities, remove_activities, testing):
