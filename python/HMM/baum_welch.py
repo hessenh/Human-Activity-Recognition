@@ -14,7 +14,9 @@ def baum_welch(number_activities,iterations,network_type):
 	
 	predictions = np.log(predictions)
 	
+
 	for i in range(0,iterations):
+		oldTransition = transition
 		transition = np.log(transition)
 	
 		forward_prob = forward(predictions,transition,number_activities)
@@ -39,7 +41,10 @@ def baum_welch(number_activities,iterations,network_type):
 			
 		for i in range(0,number_activities):
 			transition[i]=transition[i]/sum(transition[i])
-		print transition
+		
+		#diffTransition = np.subtract(transition,oldTransition)
+		#print np.abs(np.sum(diffTransition))
+
 	return transition
 
 
