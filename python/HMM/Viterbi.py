@@ -103,22 +103,32 @@ class Viterbi(object):
 		self.end_state = state
 		return self.path[state]
 
-	def get_accuracy(self):
+	def get_accuracy(self,actLen):
 		score_vit = 0
 		score_cnn = 0
-
+		activity_accuracy=np.zeros((3,actLen))
+		
 		for i in range(0, self.actual_labels_length):
 			true_state = np.argmax(self.actual_labels[i])
 			vit_state = self.states.index(self.path[self.end_state][i])
 			cnn_state = np.argmax(self.observations[i])
 
+			activity_accuracy[0][true_state] = activity_accuracy[0][true_state] + 1
+
 			if true_state == vit_state:
+				activity_accuracy[1][true_state] = activity_accuracy[1][true_state] + 1
 				score_vit +=1.0
 			if true_state == cnn_state:
 				score_cnn +=1.0
+				activity_accuracy[2][true_state] = activity_accuracy[2][true_state] + 1
+
+
 
 		print 'Viterbi score:',score_vit / self.actual_labels_length
 		print 'CNN score:',score_cnn / self.actual_labels_length
+		print 'Viterbi sensitivity: ',activity_accuracy[1]/activity_accuracy[0]
+		print 'CNN sensitivity: ',activity_accuracy[2]/activity_accuracy[0]
+		print 'Diff sensitivity:', (activity_accuracy[1]/activity_accuracy[0] - activity_accuracy[2]/activity_accuracy[0])*100
 		return score_vit / self.actual_labels_length
 
 	def save_viterbi(self,classification):
@@ -131,16 +141,16 @@ class Viterbi(object):
 		return viterbi
 
 def main():
-	network_type = 'stairs-walk'		
+	network_type = 'sd'		
 	predictions = './predictions/prediction_'+network_type+'_prob.csv'
 	actual = './predictions/actual_'+network_type+'_prob.csv'
-	states = ['STAND','SIT']
+	#states = ['STAND','SIT']
 	#states = ['WALKING','RUNNING','SHUFFLING','STAIRS (UP)', 'STAIRS (DOWN)', 'STANDING', 'VIGOROUS', 'NON-VIGOROUS']
 	#states = ['STAIRS UP', 'STAIRS DOWN']
-	states = ['STAIRS UP', 'STAIRS DOWN','WALK']
+	#states = ['STAIRS UP', 'STAIRS DOWN','WALK']
 	#states = ['SHUF', 'STAND','NON-VIGOROUS']
 	#states = ['S','D']
-	#states = ['WALKING','RUNNING','STAIRS (UP)','STAIRS (DOWN)','STANDING','SITTING','LYING','BENDING','CYCLING (SITTING)','CYCLING (STANDING)']
+	states = ['WALKING','RUNNING','STAIRS (UP)','STAIRS (DOWN)','STANDING','SITTING','LYING','BENDING','CYCLING (SITTING)','CYCLING (STANDING)']
 
 
 	numOfAct = len(states)
@@ -149,9 +159,9 @@ def main():
 	v.load_actual_labels(actual)
 	v.generate_start_probability(numOfAct)
 
-	#trans = baum_welch(len(states),5,network_type)
-	trans = generateTransMatrix(numOfAct,network_type)
-	#print trans
+	trans = baum_welch(len(states),5,network_type)
+	#trans = generateTransMatrix(numOfAct,network_type)
+	print trans
 
 
 	#v.transition_probability={'STANDING': {'STANDING': 82.0, 'BENDING': 3.0, 'WALKING': 7.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 2.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
@@ -172,7 +182,7 @@ def main():
 	v.generate_observation_probability()
 	v.run()
 	v.generate_path()
-	v.get_accuracy()
+	v.get_accuracy(numOfAct)
 	viterbi = v.save_viterbi(network_type)
 	
 if __name__ == "__main__":

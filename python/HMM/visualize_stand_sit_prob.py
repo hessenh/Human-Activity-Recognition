@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 #ORIGINAL = './predictions/original.csv'
 
-network_type = 'original'
+network_type = 'sd'
 
 actual = 'predictions/actual_'+network_type+'_prob.csv'
 PREDICTION= 'predictions/prediction_'+network_type+'_prob.csv'
@@ -28,26 +28,29 @@ viterbi = df_viterbi.values
 
 
 start = 0#1500
-end = 2000
+end = 1000
 
 #original = original[start:end]
 
 actual = actual[start:end]
 predictions = predictions[start:end]
 viterbi = viterbi[start:end]
-print viterbi
+print 
+
 
 size = len(predictions)
-score= np.zeros(size)
-
+scorePre= np.zeros(size)
+scoreVit= np.zeros(size)
 for i in range(0, end-start):
 	pre = np.argmax(predictions[i])
 	act = np.argmax(actual[i])
 	if pre == act:
-		score[i] = 1
+		scorePre[i] = 1
+	if viterbi[i][0] == act:
+		scoreVit[i] = 1
 
-print 'Stand_Sit',sum(score)*1.0 / (end-start)
-
+print 'CNN',sum(scorePre)*1.0 / (end-start)
+print 'Viterbi',sum(scoreVit)*1.0 / (end-start)
 
 
 

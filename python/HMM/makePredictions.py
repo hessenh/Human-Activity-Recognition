@@ -1,13 +1,14 @@
 import input_data_window_large
 import CNN_MOD_2
+import CNN_MOD_4
 import CNN_STATIC_VARIABLES
 import numpy as np
 
 class CNN_H(object):
    	"""docstring for CNN_H"""
-	def __init__(self, network_type, index, window, input_size, conv_f_1, conv_f_2, nn_1, filter_type):
+	def __init__(self, network_type, index, window, input_size,  conv_layers, neural_layers, filter_type):
 		self.VARS = CNN_STATIC_VARIABLES.CNN_STATIC_VARS()
-		subject_set = self.VARS.get_subject_set()
+		subject_set = self.VARS.get_subject_set(False)
 
 		if network_type == 'original':
 			remove_activities = self.VARS.CONVERTION_ORIGINAL_INVERSE
@@ -16,10 +17,11 @@ class CNN_H(object):
 			self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, 10, remove_activities, None, keep_activities, window)
 
 		if network_type == 'sd':
-			convertion = self.VARS.CONVERTION_STATIC_DYNAMIC
-			config = self.VARS.get_config(input_size, self.VARS.len_convertion_list(convertion), index, 100, network_type, conv_f_1, conv_f_2, nn_1, filter_type)
+			remove_activities = self.VARS.CONVERTION_STATIC_DYNAMIC_INVERSE
+			keep_activities = self.VARS.CONVERTION_STATIC_DYNAMIC
+			self.config = self.VARS.get_config(input_size, 10, index, 100, network_type,  conv_layers, neural_layers, filter_type)
 			print 'Creating data set'
-			self.data_set = input_data_window_large.read_data_sets(subject_set, self.VARS.len_convertion_list(convertion), convertion, None, window)
+			self.data_set = input_data_window_large.read_data_sets_without_activity(subject_set, 10, remove_activities, None, keep_activities, window)
 		
 
 		if network_type == 'stand-sit':
@@ -62,9 +64,9 @@ class CNN_H(object):
 
 
 
-		self.cnn = CNN_MOD_2.CNN_MOD(self.config)
+		self.cnn = CNN_MOD_4.CNN_FILTER(self.config)
 		self.cnn.set_data_set(self.data_set)
-		self.cnn.load_model('models/' + network_type+ '_' + str(input_size) + '_' + str(conv_f_1) + '_' + str(conv_f_2) + '_' + str(nn_1[0]) + '_' + str(nn_1[1]) + '_' + filter_type)
+		self.cnn.load_model('models/' + self.config['model_name'] )
 		
 
 
@@ -97,9 +99,9 @@ class CNN_H(object):
 		np.savetxt('predictions/prediction_'+network_type+'_prob.csv', predictions, delimiter=",")
 		
 
-cnn_h = CNN_H('original', 2000, '1.0', 600, 20, 40, [200, 100], "VALID")
+cnn_h = CNN_H('sd', 20000, '1.0', 600, [20, 40], [1500], "VALID")
 
-print cnn_h.run_network_probability('original',10)
+print cnn_h.run_network_probability('sd',10)
 
 
 
