@@ -3,7 +3,7 @@ import numpy as np
 import math
 from baum_welch import baum_welch 
 from transMatrix import generateTransMatrix 
-
+import pickle
 
 
 class Viterbi(object):
@@ -80,8 +80,14 @@ class Viterbi(object):
 				self.emission_probability[j][i] = np.log(self.emission_probability[j][i])
 				
 		print '- Generated Emission Probability'
-		
+	
+	def save_obj(self, obj, name ):
+		with open('models/'+ name + '.pkl', 'wb') as f:
+			pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
+	def load_obj(self, name):
+	    with open('models/' + name + '.pkl', 'rb') as f:
+	        return pickle.load(f)
 
 	def run(self):
 		for y in range(len(self.states)):
@@ -135,7 +141,7 @@ class Viterbi(object):
 		path = self.generate_path()
 		viterbi = []
 		for i in range(0,len(path)):
-			viterbi.append(self.states.index(path[i]))
+			viterbi.append(self.states.index(path[i]) + 1)
 			
 		np.savetxt('./predictions/viterbi_' + classification + '.csv', viterbi, delimiter=",")
 		return viterbi
@@ -144,6 +150,8 @@ def main():
 	network_type = 'sd'		
 	predictions = './predictions/prediction_'+network_type+'_prob.csv'
 	actual = './predictions/actual_'+network_type+'_prob.csv'
+	loading_models = True
+
 	#states = ['STAND','SIT']
 	#states = ['WALKING','RUNNING','SHUFFLING','STAIRS (UP)', 'STAIRS (DOWN)', 'STANDING', 'VIGOROUS', 'NON-VIGOROUS']
 	#states = ['STAIRS UP', 'STAIRS DOWN']
@@ -157,33 +165,48 @@ def main():
 	v = Viterbi(states)
 	v.load_observations(predictions)
 	v.load_actual_labels(actual)
-	v.generate_start_probability(numOfAct)
 
-	trans = baum_welch(len(states),5,network_type)
-	#trans = generateTransMatrix(numOfAct,network_type)
-	print trans
+	if loading_models:
+		print '- Loading models'
+		v.start_probability =  v.load_obj('start_probability')
+		v.transition_probability = v.load_obj('transition_probability')
+		v.generate_observation_probability()
+		print '- Running viterbi'
+		v.run()
+		print '- Generating path'
+		v.generate_path()
+		#v.get_accuracy(numOfAct)
+		viterbi = v.save_viterbi(network_type)
 
+	else:
+		v.generate_start_probability(numOfAct)
+		v.save_obj(v.start_probability, 'start_probability')
 
-	#v.transition_probability={'STANDING': {'STANDING': 82.0, 'BENDING': 3.0, 'WALKING': 7.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 2.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
-	#'BENDING': {'STANDING': 23.0, 'BENDING': 69.0, 'WALKING': 1.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 1.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
-	#'WALKING': {'STANDING': 14.0, 'BENDING': 1.0, 'WALKING': 78.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 1.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
-	#'CYCLING (SITTING)': {'STANDING': 1.0, 'BENDING': 1.0, 'WALKING':1.0, 'CYCLING (SITTING)': 89.0, 'SITTING': 3.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 1.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
-	#'SITTING': {'STANDING': 1.0, 'BENDING': 1.0, 'WALKING': 1.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 91.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 1.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
-	#'CYCLING (STANDING)': {'STANDING': 1.0, 'BENDING': 1.0, 'WALKING': 1.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 91.0, 'RUNNING': 1.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
-	#'RUNNING': {'STANDING': 2.0, 'BENDING': 1.0, 'WALKING': 6.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 85.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
-	#'STAIRS (UP)': {'STANDING': 1.0, 'BENDING': 1.0, 'WALKING': 1.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 1.0, 'STAIRS (UP)': 91.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
-	#'STAIRS (DOWN)': {'STANDING': 1.0, 'BENDING': 1.0, 'WALKING': 1.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 1.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 91.0, 'LYING': 1.0}, 
-	#'LYING': {'STANDING': 1.0, 'BENDING': 1.0, 'WALKING': 1.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 1.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 91.0}}
+		trans = baum_welch(len(states),5,network_type)
+		#trans = generateTransMatrix(numOfAct,network_type)
+		print trans
 
+		#v.transition_probability={'STANDING': {'STANDING': 82.0, 'BENDING': 3.0, 'WALKING': 7.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 2.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
+		#'BENDING': {'STANDING': 23.0, 'BENDING': 69.0, 'WALKING': 1.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 1.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
+		#'WALKING': {'STANDING': 14.0, 'BENDING': 1.0, 'WALKING': 78.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 1.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
+		#'CYCLING (SITTING)': {'STANDING': 1.0, 'BENDING': 1.0, 'WALKING':1.0, 'CYCLING (SITTING)': 89.0, 'SITTING': 3.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 1.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
+		#'SITTING': {'STANDING': 1.0, 'BENDING': 1.0, 'WALKING': 1.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 91.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 1.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
+		#'CYCLING (STANDING)': {'STANDING': 1.0, 'BENDING': 1.0, 'WALKING': 1.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 91.0, 'RUNNING': 1.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
+		#'RUNNING': {'STANDING': 2.0, 'BENDING': 1.0, 'WALKING': 6.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 85.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
+		#'STAIRS (UP)': {'STANDING': 1.0, 'BENDING': 1.0, 'WALKING': 1.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 1.0, 'STAIRS (UP)': 91.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 
+		#'STAIRS (DOWN)': {'STANDING': 1.0, 'BENDING': 1.0, 'WALKING': 1.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 1.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 91.0, 'LYING': 1.0}, 
+		#'LYING': {'STANDING': 1.0, 'BENDING': 1.0, 'WALKING': 1.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 1.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 91.0}}
 
-	v.generate_transition_probability(trans)
+		v.generate_transition_probability(trans)
+		v.save_obj(v.transition_probability, 'transition_probability')
 
+		v.generate_observation_probability()
+		v.save_obj(v.emission_probability, 'emission_probability')
 
-	v.generate_observation_probability()
-	v.run()
-	v.generate_path()
-	v.get_accuracy(numOfAct)
-	viterbi = v.save_viterbi(network_type)
+		v.run()
+		v.generate_path()
+		v.get_accuracy(numOfAct)
+		viterbi = v.save_viterbi(network_type)
 	
 if __name__ == "__main__":
 	main()
