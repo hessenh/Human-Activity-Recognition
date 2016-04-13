@@ -4,9 +4,9 @@ import math
 
 
 def baum_welch(number_activities,iterations,network_type):
-	predictions = './predictions/prediction_'+network_type+'_prob.csv'
+	predictions = './predictions/prediction_'+network_type+'_prob_train.csv'
 	predictions  = pd.read_csv(predictions, header=None, sep='\,',engine='python').as_matrix()
-	actual = './predictions/actual_'+network_type+'_prob.csv'
+	actual = './predictions/actual_'+network_type+'_prob_train.csv'
 	actual_labels  = pd.read_csv(actual, header=None, sep='\,',engine='python').as_matrix()
 
 	transition = np.zeros((number_activities,number_activities))
