@@ -89,7 +89,7 @@ class CNN_H(object):
 		actuals = np.zeros((size, numOfAct))
 
 		score = 0
-		for i in range(0, size):
+		for i in range(0, size):	
 			prediction, actual = self.classify_instance_probability(i)
 			actuals[i] = actual
 			predictions[i] = prediction
