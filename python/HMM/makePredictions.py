@@ -75,7 +75,7 @@ class CNN_H(object):
 		''' Test classifiers on one data index, returns the actual and probability prediction '''
 
 		
-		data = self.data_set.test.next_data_label(index)
+		data = self.data_set.train.next_data_label(index)
 		actual = data[1]
 
 		prediction = self.cnn.run_network_return_probability(data)
@@ -84,7 +84,7 @@ class CNN_H(object):
 		return  prediction, actual
 
 	def run_network_probability(self,network_type,numOfAct):
-		size = len(self.data_set.test.labels)
+		size = len(self.data_set.train.labels)
 		predictions = np.zeros((size,numOfAct))
 		actuals = np.zeros((size, numOfAct))
 
@@ -95,8 +95,8 @@ class CNN_H(object):
 			predictions[i] = prediction
 		
 		print 'Saving predictions and results'
-		np.savetxt('predictions/actual_'+network_type+'_prob.csv', actuals, delimiter=",")
-		np.savetxt('predictions/prediction_'+network_type+'_prob.csv', predictions, delimiter=",")
+		np.savetxt('predictions/actual_'+network_type+'_prob_train.csv', actuals, delimiter=",")
+		np.savetxt('predictions/prediction_'+network_type+'_prob_train.csv', predictions, delimiter=",")
 		
 
 cnn_h = CNN_H('sd', 20000, '1.0', 600, [20, 40], [1500], "VALID")

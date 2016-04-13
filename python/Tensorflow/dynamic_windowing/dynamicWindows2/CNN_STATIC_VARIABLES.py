@@ -83,8 +83,8 @@ class CNN_STATIC_VARS(object):
 				TEST_SUBJECTS.append(SUBJECTS.pop(r))
 			TRAIN_SUBJECTS = SUBJECTS
 		else:
-			TRAIN_SUBJECTS = ['01A', '02A', '04A', '20A', '06A', '08A', '09A', '11A', '12A', '13A', '15A', '16A', '19A', '23A']
-			TEST_SUBJECTS = ['21A', '05A', '14A', '18A', '03A', '22A', '10A']
+			TRAIN_SUBJECTS = ['01A', '02A', '03A', '20A', '06A', '08A', '09A', '11A', '12A', '13A', '15A', '16A', '19A', '23A']
+			TEST_SUBJECTS = ['21A', '05A', '14A', '18A', '04A', '22A', '10A']
 		return [TRAIN_SUBJECTS, TEST_SUBJECTS]
 
 def format_list(list_input):
