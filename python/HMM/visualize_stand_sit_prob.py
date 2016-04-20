@@ -10,8 +10,8 @@ import numpy as np
 
 network_type = 'sd'
 
-actual = 'predictions/actual_'+network_type+'_prob.csv'
-PREDICTION= 'predictions/prediction_'+network_type+'_prob.csv'
+actual = 'predictions/actual_'+network_type+'_prob_test_all.csv'
+PREDICTION= 'predictions/prediction_'+network_type+'_prob_test_all.csv'
 VITERBI = 'predictions/viterbi_'+network_type+'.csv'
 #df_original = pd.read_csv(ORIGINAL, header=None, sep='\,', engine='python'
 df_actual = pd.read_csv(actual, header=None, sep='\,', engine='python')
@@ -27,40 +27,58 @@ predictions = df_prediction.values
 viterbi = df_viterbi.values
 
 
-start = 0#1500
-end = 1000
 
-#original = original[start:end]
+predictions = np.argmax(predictions, axis=1)
+actual = np.argmax(actual, axis=1)
+
+
+viterbi = np.int_(viterbi.T[0])
+
+
+
+keep_boolean = (actual!=10) & (actual!=11) & (actual!=12)
+
+
+
+predictions = predictions[keep_boolean]
+actual = actual[keep_boolean]
+viterbi =viterbi[keep_boolean]
+
+start = 26500#1500
+end = 27500#len(viterbi)
 
 actual = actual[start:end]
 predictions = predictions[start:end]
 viterbi = viterbi[start:end]
-print 
+
 
 
 size = len(predictions)
 scorePre= np.zeros(size)
 scoreVit= np.zeros(size)
-for i in range(0, end-start):
-	pre = np.argmax(predictions[i])
-	act = np.argmax(actual[i])
-	if pre == act:
+scoreActCNN= np.zeros(10)
+scoreActVit = np.zeros(10)
+realAct = np.zeros(10)
+for i in range(0, size):
+	realAct[actual[i]] = realAct[actual[i]] + 1
+	if predictions[i] == actual[i]:
 		scorePre[i] = 1
-	if viterbi[i][0] == act:
+		scoreActCNN[actual[i]] = scoreActCNN[actual[i]] +1
+	if viterbi[i] == actual[i]+1:
+		scoreActVit[actual[i]] = scoreActVit[actual[i]] +1
 		scoreVit[i] = 1
 
-print 'CNN',sum(scorePre)*1.0 / (end-start)
-print 'Viterbi',sum(scoreVit)*1.0 / (end-start)
+print 'CNN',sum(scorePre)*1.0 / size
+print 'Viterbi',sum(scoreVit)*1.0 / size
+print 'CNN: ',scoreActCNN/realAct
+print 'Viterbi: ' ,scoreActVit/realAct
+print 'diff: ',scoreActVit/realAct - scoreActCNN/realAct
 
 
 
 
-actual_max = np.zeros(len(actual))
-predictions_max = np.zeros(len(actual))
 
-for i in range(0,len(actual)):
-	actual_max[i] = np.argmax(actual[i])+1
-	predictions_max[i] = np.argmax(predictions[i])+1
+
 
 plt.figure(1)
 
@@ -68,18 +86,18 @@ plt.figure(1)
 
 plt.subplot(311)
 axes = plt.gca()
-axes.set_ylim([0.9,10.4])
-plt.plot(actual_max)
+axes.set_ylim([0.5,11.5])
+plt.plot(actual+1)
 
 plt.subplot(312)
 axes = plt.gca()
-axes.set_ylim([0.9,10.4])
-plt.plot(predictions_max)
+axes.set_ylim([0.5,10.5])
+plt.plot(predictions+1)
 
 plt.subplot(313)
 axes = plt.gca()
-axes.set_ylim([0.9,10.4])
-plt.plot(viterbi + 1)
+axes.set_ylim([0.5,10.5])
+plt.plot(viterbi)
 
 
 

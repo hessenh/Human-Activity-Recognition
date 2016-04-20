@@ -112,21 +112,21 @@ class Viterbi(object):
 	def get_accuracy(self,actLen):
 		score_vit = 0
 		score_cnn = 0
-		activity_accuracy=np.zeros((3,actLen))
+		activity_accuracy=np.zeros((3,13))
 		
 		for i in range(0, self.actual_labels_length):
 			true_state = np.argmax(self.actual_labels[i])
 			vit_state = self.states.index(self.path[self.end_state][i])
 			cnn_state = np.argmax(self.observations[i])
 
-			activity_accuracy[0][true_state] = activity_accuracy[0][true_state] + 1
+			activity_accuracy[0][true_state] = activity_accuracy[0][true_state]+1
 
 			if true_state == vit_state:
-				activity_accuracy[1][true_state] = activity_accuracy[1][true_state] + 1
+				activity_accuracy[1][true_state] = activity_accuracy[1][true_state] +1
 				score_vit +=1.0
 			if true_state == cnn_state:
 				score_cnn +=1.0
-				activity_accuracy[2][true_state] = activity_accuracy[2][true_state] + 1
+				activity_accuracy[2][true_state] = activity_accuracy[2][true_state] +1
 
 
 
@@ -148,9 +148,9 @@ class Viterbi(object):
 
 def main():
 	network_type = 'sd'		
-	predictions = './predictions/prediction_'+network_type+'_prob.csv'
-	actual = './predictions/actual_'+network_type+'_prob.csv'
-	loading_models = True
+	predictions = './predictions/prediction_'+network_type+'_prob_test_all.csv'
+	actual = './predictions/actual_'+network_type+'_prob_test_all.csv'
+	loading_models =True
 
 	#states = ['STAND','SIT']
 	#states = ['WALKING','RUNNING','SHUFFLING','STAIRS (UP)', 'STAIRS (DOWN)', 'STANDING', 'VIGOROUS', 'NON-VIGOROUS']
@@ -170,13 +170,15 @@ def main():
 		print '- Loading models'
 		v.start_probability =  v.load_obj('start_probability')
 		v.transition_probability = v.load_obj('transition_probability')
+		print v.transition_probability
 		v.generate_observation_probability()
 		print '- Running viterbi'
 		v.run()
 		print '- Generating path'
 		v.generate_path()
-		#v.get_accuracy(numOfAct)
+		
 		viterbi = v.save_viterbi(network_type)
+		v.get_accuracy(numOfAct)
 
 	else:
 		v.generate_start_probability(numOfAct)
