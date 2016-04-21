@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import math
 from baum_welch import baum_welch 
+from baum_welch import countTransitions
 from transMatrix import generateTransMatrix 
 import pickle
 
@@ -150,8 +151,7 @@ def main():
 	network_type = 'sd'		
 	predictions = './predictions/prediction_'+network_type+'_prob_test_all.csv'
 	actual = './predictions/actual_'+network_type+'_prob_test_all.csv'
-	loading_models =True
-
+	loading_models = True
 	#states = ['STAND','SIT']
 	#states = ['WALKING','RUNNING','SHUFFLING','STAIRS (UP)', 'STAIRS (DOWN)', 'STANDING', 'VIGOROUS', 'NON-VIGOROUS']
 	#states = ['STAIRS UP', 'STAIRS DOWN']
@@ -185,7 +185,8 @@ def main():
 		v.save_obj(v.start_probability, 'start_probability')
 
 		trans = baum_welch(len(states),5,network_type)
-		#trans = generateTransMatrix(numOfAct,network_type)
+		
+		#trans = countTransitions()
 		print trans
 
 		#v.transition_probability={'STANDING': {'STANDING': 82.0, 'BENDING': 3.0, 'WALKING': 7.0, 'CYCLING (SITTING)': 1.0, 'SITTING': 1.0, 'CYCLING (STANDING)': 1.0, 'RUNNING': 2.0, 'STAIRS (UP)': 1.0, 'STAIRS (DOWN)': 1.0, 'LYING': 1.0}, 

@@ -44,8 +44,8 @@ predictions = predictions[keep_boolean]
 actual = actual[keep_boolean]
 viterbi =viterbi[keep_boolean]
 
-start = 26500#1500
-end = 27500#len(viterbi)
+start = 0#1500
+end = len(viterbi)
 
 actual = actual[start:end]
 predictions = predictions[start:end]

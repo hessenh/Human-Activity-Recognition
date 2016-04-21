@@ -43,79 +43,66 @@ def baum_welch(number_activities,iterations,network_type):
 		for i in range(0,number_activities):
 			transition[i]=transition[i]/sum(transition[i])
 		
-		#diffTransition = np.subtract(transition,oldTransition)
-		#print np.abs(np.sum(diffTransition))
 
-		# Umulige aktiviteter
-	#Walking
-	#transition[0][6] = 0.000000000000001
-	#transition[0][8] = 0.000000000000001
-	#transition[0][9] = 0.000000000000001
+	trans1 = transition
+	trans2 =countTransitions()
+	print 'BW: ', trans1
+	print 'overganger: ', trans2
 	
-	#Running
-	#transition[1][5] = 0.000000000000001
-	#transition[1][6] = 0.000000000000001
-	#transition[1][7] = 0.000000000000001
-	#transition[1][8] = 0.000000000000001
-	#transition[1][9] = 0.000000000000001
+	finalTrans = trans1 + trans2
+	for i in range(0,10):
+		a = finalTrans[i]/(np.sum(finalTrans[i])*1.0)
+		finalTrans[i] = a.tolist()
 
-	#Stairs (up)
-	#transition[2][5] = 0.000000000000001
-	transition[2][6] = 0.0000000001
-	transition[2][7] = 0.0000000001
-	transition[2][8] = 0.0000000001
-	#transition[2][9] = 0.000000000000001
-
-	#Stairs (down)
-	#transition[3][5] = 0.000000000000001
-	#transition[3][6] = 0.000000000000001
-	#transition[3][7] = 0.000000000000001
-	#transition[3][8] = 0.000000000000001
-	transition[3][9] = 0.0000000001
-
-	#Sitting
-	#transition[5][1] = 0.000000000000001
-	transition[5][2] = 0.0000000001
-	#transition[5][3] = 0.000000000000001
-
-	#Lying
-	#transition[6][0] = 0.000000000000001
-	#transition[6][1] = 0.000000000000001
-	#transition[6][2] = 0.000000000000001
-	#transition[6][3] = 0.000000000000001
-	transition[6][7] = 0.0000000001
-	#transition[6][8] = 0.000000000000001
-	#transition[6][9] = 0.000000000000001
-
-	#Bending
-	#transition[7][1] = 0.000000000000001
-	transition[7][2] = 0.0000000001
-	#transition[7][3] = 0.000000000000001
-	#transition[7][6] = 0.000000000000001
-	#transition[7][8] = 0.000000000000001
-	transition[7][9] = 0.0000000001
+	return finalTrans
 
 
-	#Cycl (sit)
-	#transition[8][0] = 0.000000000000001
-	#transition[8][1] = 0.000000000000001
-	#transition[8][2] = 0.000000000000001
-	#transition[8][3] = 0.000000000000001
-	#transition[8][6] = 0.000000000000001
-	#transition[8][7] = 0.000000000000001
 
-	#Cycl (stand)
-	#transition[9][0] = 0.000000000000001
-	#transition[9][1] = 0.000000000000001
-	transition[9][2] = 0.0000000001
-	#transition[9][3] = 0.000000000000001
-	#transition[9][6] = 0.000000000000001
-	#transition[9][7] = 0.000000000000001
+def countTransitions():
+	actual = './predictions/actual_'+'sd'+'_prob_train.csv'
+	actual  = pd.read_csv(actual, header=None, sep='\,',engine='python').as_matrix()
+	
+	transition = np.zeros((10,10))
+	transition = transition 
+	
+	for i in range(0,len(actual)-1):
+		act = True
+		prev = actual[i]
+		prev = np.argmax(prev)
+		if (prev == 10) or (prev ==11) or (prev == 12):
+			act = False
+		post = actual[i+1]
+		post = np.argmax(post)
+		if (post == 10) or (post ==11) or (post == 12):
+			act = False
+		if act == True:
+			transition[prev][post] += 1
+	
+#	i=0
+#	foundPrev = False
+#	while i<len(actual):
+#		
+#		act = np.argmax(actual[i])
+#
+#		if foundPrev == False:
+#			if (act != 10) and (act !=11) and (act != 12):
+#				prev = act
+#				foundPrev = True
+#
+#		else:
+#			if (act != 10) and (act !=11) and (act != 12):
+#				post = act
+#				transition[prev][post] += 1
+#				foundPrev = False
+#		
+#		i+=1
 
 
+	for i in range(0,10):
+		a = transition[i]/(np.sum(transition[i])*1.0)
+		transition[i] = a.tolist()
+	print transition
 	return transition
-
-
 
 
 def forward(predictions_log,transition_log, number_activities):
@@ -162,3 +149,4 @@ def backward(predictions_log,transition_log, number_activities):
 			backward_prob[t][act] = prob_t
 			
 	return backward_prob
+
