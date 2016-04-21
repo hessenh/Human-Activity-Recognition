@@ -49,10 +49,14 @@ transition2 = [
 [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.91,0.01],
 [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.91],]
 
-
+trans = [[1,2,3],[2,3,4],[1,1,1]]
+print np.sum(trans[0])
+a = trans[0]/(np.sum(trans[0])*1.0)
+trans[0] = a.tolist()
+print trans
 #transition = np.zeros((10,10))
 #transition = transition + 1.0/10
-print np.subtract(transition1,transition2) 
+#print np.subtract(transition1,transition2) 
 
 
 
