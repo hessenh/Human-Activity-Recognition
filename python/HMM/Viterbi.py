@@ -30,7 +30,7 @@ class Viterbi(object):
 	def generate_start_probability(self,numOfAct):
 		self.start_probability = {}
 		for i in range(len(self.states)):
-			self.start_probability[self.states[i]] = 1/numOfAct #np.log(np.count_nonzero(self.actual_labels[:,i])*1.0 / self.actual_labels_length)
+			self.start_probability[self.states[i]] = np.log(1.0/numOfAct) #np.log(np.count_nonzero(self.actual_labels[:,i])*1.0 / self.actual_labels_length)
 		print '- Generated Start Probability'
 
 
@@ -40,7 +40,7 @@ class Viterbi(object):
 		for i in range(0,len(self.states)):
 			temp_dict = {}
 			for j in range(0,len(self.states)):
-				temp_dict[self.states[j]] = transition[i][j]/np.sum(transition[i])
+				temp_dict[self.states[j]] = transition[i][j]#/np.sum(transition[i])
 			self.transition_probability[self.states[i]] = temp_dict
 		print self.transition_probability
 		#print self.transition_probability
@@ -151,6 +151,9 @@ def main():
 	network_type = 'sd'		
 	predictions = './predictions/prediction_'+network_type+'_prob_test_all.csv'
 	actual = './predictions/actual_'+network_type+'_prob_test_all.csv'
+	#predictions = './predictions/PREDICTION_TRAINING.csv'
+
+
 	loading_models = True
 	#states = ['STAND','SIT']
 	#states = ['WALKING','RUNNING','SHUFFLING','STAIRS (UP)', 'STAIRS (DOWN)', 'STANDING', 'VIGOROUS', 'NON-VIGOROUS']
@@ -158,7 +161,7 @@ def main():
 	#states = ['STAIRS UP', 'STAIRS DOWN','WALK']
 	#states = ['SHUF', 'STAND','NON-VIGOROUS']
 	#states = ['S','D']
-	states = ['WALKING','RUNNING','STAIRS (UP)','STAIRS (DOWN)','STANDING','SITTING','LYING','BENDING','CYCLING (SITTING)','CYCLING (STANDING)']
+	states = [1,2,3,4,5,6,7,8,9,10]
 
 
 	numOfAct = len(states)

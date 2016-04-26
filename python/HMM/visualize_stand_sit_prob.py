@@ -6,7 +6,77 @@
 import matplotlib.pyplot as plt
 import pandas as pd 
 import numpy as np
+import json
 #ORIGINAL = './predictions/original.csv'
+
+def get_score(result_matrix):
+	activities = [0,1,2,3,4,5,6,7,8,9]
+	'''TP / (FP - TP)
+	Correctly classified walking / Classified as walking
+	'''
+	TP = np.zeros(len(activities))
+	TN = np.zeros(len(activities))
+
+	FP_TP = np.zeros(len(activities))
+	TP_FN = np.zeros(len(activities))
+	FP_TN = np.zeros(len(activities))
+	
+	actual = result_matrix[:,0]
+	predicted = result_matrix[:,2]
+
+
+
+	for activity in activities:
+		''' FP - TP'''
+		FP_TP[activity] = np.sum(predicted == activity) #len(df[df[0]==activity])
+
+		''' TP - FN '''
+		TP_FN[activity] = np.sum(actual == activity) #len(df_actual[df_actual[0]==activity])
+		''' FP - TN '''
+		FP_TN[activity] = np.sum(actual != activity)#len(df_actual[df_actual[0] != activity])
+
+	for i in range(0, len(predicted)):
+		if predicted[i] == actual[i]:
+			TP[actual[i]] += 1.0
+		
+		for activity in activities:
+			if actual[i] != activity and predicted[i]  != activity:
+				TN[activity] += 1.0
+				
+	print FP_TP
+	accuracy = sum(TP) / sum(TP_FN)
+	specificity = TN / FP_TN
+	precision = TP / FP_TP
+	recall = TP / TP_FN
+	return [accuracy, specificity, precision, recall]
+
+
+def produce_statistics_json(result):
+	print 'produce_statistics_json'
+	score = get_score(result)
+
+	ACTIVITY_NAMES_CONVERTION = {1:'WALKING',2:'RUNNING', 3:'STAIRS (UP)', 4:'STAIRS (DOWN)', 5:'STANDING', 6:'SITTING', 7:'LYING', 8:'BENDING', 9:'CYCLING (SITTING)', 10:'CYCLING (STANDING)'}
+
+	specificity = {}
+	precision = {}
+	recall = {}
+	for i in range(0, len(score[1])):
+		specificity[ACTIVITY_NAMES_CONVERTION[i+1]] = score[1][i]
+		precision[ACTIVITY_NAMES_CONVERTION[i+1]] = score[2][i]
+		recall[ACTIVITY_NAMES_CONVERTION[i+1]] = score[3][i]
+
+	statistics = {
+		'ACCURACY' : score[0],
+		'specificity': specificity,
+		'PRECISION': precision,
+		'RECALL': recall
+	}
+	path = 'TEST_STATISTICS.json'
+	with open(path, "w") as outfile:
+		json.dump(statistics, outfile)
+	return statistics
+		
+
 
 network_type = 'sd'
 
@@ -30,11 +100,7 @@ viterbi = df_viterbi.values
 
 predictions = np.argmax(predictions, axis=1)
 actual = np.argmax(actual, axis=1)
-
-
 viterbi = np.int_(viterbi.T[0])
-
-
 
 keep_boolean = (actual!=10) & (actual!=11) & (actual!=12)
 
@@ -44,14 +110,33 @@ predictions = predictions[keep_boolean]
 actual = actual[keep_boolean]
 viterbi =viterbi[keep_boolean]
 
-start = 0#1500
-end = len(viterbi)
-
-actual = actual[start:end]
-predictions = predictions[start:end]
-viterbi = viterbi[start:end]
 
 
+
+
+
+result = np.zeros((len(predictions), 3))
+for i in range(0,len(result)):
+	a = actual[i]
+	c = predictions[i]
+	v = viterbi[i]-1
+	result[i] = [a,c,v]
+
+produce_statistics_json(result)
+
+
+#PLOTTING
+
+#start = 0#1500
+#end = len(predictions)
+
+
+
+
+
+#actual = actual[start:end]
+#predictions = predictions[start:end]
+#viterbi = viterbi[start:end]
 
 size = len(predictions)
 scorePre= np.zeros(size)
@@ -78,11 +163,7 @@ print 'diff: ',scoreActVit/realAct - scoreActCNN/realAct
 
 
 
-
-
 plt.figure(1)
-
-
 
 plt.subplot(311)
 axes = plt.gca()
@@ -102,5 +183,3 @@ plt.plot(viterbi)
 
 
 plt.show()
-
-
