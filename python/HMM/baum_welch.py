@@ -4,7 +4,7 @@ import math
 
 
 def baum_welch(number_activities,iterations,network_type):
-	predictions = './predictions/prediction_'+network_type+'_prob_train.csv'
+	predictions = './predictions/PREDICTION_TRAINING.csv'
 	predictions  = pd.read_csv(predictions, header=None, sep='\,',engine='python').as_matrix()
 	
 	transition = np.zeros((number_activities,number_activities))
@@ -53,6 +53,7 @@ def baum_welch(number_activities,iterations,network_type):
 	for i in range(0,10):
 		a = finalTrans[i]/(np.sum(finalTrans[i])*1.0)
 		finalTrans[i] = a.tolist()
+
 
 	return finalTrans
 
@@ -149,4 +150,3 @@ def backward(predictions_log,transition_log, number_activities):
 			backward_prob[t][act] = prob_t
 			
 	return backward_prob
-
