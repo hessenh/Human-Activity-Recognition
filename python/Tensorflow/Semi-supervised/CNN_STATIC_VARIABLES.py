@@ -61,9 +61,10 @@ class CNN_STATIC_VARS(object):
 			TEST_SUBJECTS = [SUBJECTS.pop(i)]
 			TRAIN_SUBJECTS = SUBJECTS
 		else:
-			TRAIN_SUBJECTS = ['01A']#, '02A', '04A', '20A', '06A', '08A', '09A', '11A', '12A', '13A', '15A', '16A', '19A', '23A']
+			TRAIN_SUBJECTS = ['PM09']#, '02A', '04A', '20A', '06A', '08A', '09A', '11A', '12A', '13A', '15A', '16A', '19A', '23A']
 			TEST_SUBJECTS = ["18A"]#['21A', '05A', '14A', '18A', '03A', '22A', '10A']
-
+			TEST_SUBJECTS = ["01Y"]#['21A', '05A', '14A', '18A', '03A', '22A', '10A']
+			TEST_SUBJECTS = ["PM03"]#,"PM02","PM03","PM04","PM05","PM06","PM07","PM08","PM09","PM11","PM12","PM13","PM14","PM15","PM16"]
 		return [TRAIN_SUBJECTS, TEST_SUBJECTS]
 
 
