@@ -186,7 +186,7 @@ class CNN_FILTER(object):
   def test_network_stepwise(self):
     length_of_data = len(self._data_set.validation.data)
     #print length_of_data
-    activities = [0,1,2,3,4,5,6,7,8,9]
+    activities = [0,1,2,3,4,5,6]
     total_accuracy = 0.0
     total_accuracy_whole = 0.0
     for activity in activities:

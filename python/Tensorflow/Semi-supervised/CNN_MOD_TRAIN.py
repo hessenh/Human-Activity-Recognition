@@ -9,7 +9,6 @@ class CNN_SS_TRAIN(object):
       VARS = CNN_STATIC_VARIABLES.CNN_STATIC_VARS()
       subject_set = VARS.get_subject_set_SS(False)
       
-     
       output = 10
       remove_activities = VARS.CONVERTION_STATIC_DYNAMIC_INVERSE
       keep_activities = VARS.CONVERTION_STATIC_DYNAMIC
@@ -61,11 +60,11 @@ class CNN_SS_TRAIN(object):
          final_prediction_indices = []
          equal_pool_size = False
          threshold_subset = False
-         highest_confident = False
-         self_learning = True
+         highest_confident = True
+         self_learning = False
          if equal_pool_size:
             ''' Select the N most confident samples from each class '''
-            activity_list = [0,1,2,3,4,5,6,7,8,9]
+            activity_list = [0,1,2,3,4,5,6,7]
             # Sort
             prediction_indices = prediction_indices[prediction_indices[:,2].argsort()]
             for i in range(0, len(activity_list)):
@@ -99,7 +98,7 @@ class CNN_SS_TRAIN(object):
          activity_accuracy = np.zeros(len(self.data_set.validation.labels[0]))
          for cnn in networks:
             cnn.set_data_set(self.data_set)
-            train_iterations = 400 *4
+            train_iterations = 800
 
             print 'Number of training iterations', train_iterations
             cnn.continue_training(train_iterations)

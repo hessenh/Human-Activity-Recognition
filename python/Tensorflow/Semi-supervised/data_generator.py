@@ -80,9 +80,9 @@ def extract_labels(subjects, output_size, change_labels, window):
 def extract_merged_labels_and_data(subject, output_size, remove_activities, convert_activties, window, remove_messy_windows):
   filepath = '../../../../Prosjektoppgave/Notebook/data/'+subject+'/DATA_WINDOW/'+window+'/ORIGINAL/'
   files =   [
-  'Axivity_BACK_Back_X.csv', 'Axivity_THIGH_Right_Y.csv', 
-  'Axivity_BACK_Back_Y.csv', 'Axivity_THIGH_Right_Z.csv', 
-  'Axivity_BACK_Back_Z.csv', 'Axivity_THIGH_Right_X.csv']
+  'Axivity_CHEST_Back_X.csv', 'Axivity_THIGH_Right_Y.csv', 
+  'Axivity_CHEST_Back_Y.csv', 'Axivity_THIGH_Right_Z.csv', 
+  'Axivity_CHEST_Back_Z.csv', 'Axivity_THIGH_Right_X.csv']
 
   if remove_messy_windows:
     files =   [
@@ -364,7 +364,7 @@ def read_data_sets_without_activity(subjects_set, output_size, remove_activities
   training_subjects = subjects_set[0]
   test_subjects = subjects_set[1]
   remove_messy_windows = False
-  oversampling = True
+  oversampling = False
   validation_set = True
 
   print('Remove messy windows', remove_messy_windows)
@@ -407,6 +407,7 @@ def read_data_sets_without_activity(subjects_set, output_size, remove_activities
         activity_label = train_labels[activity_boolean]
 
         activity_length = len(activity_data)
+        print(activity_length)
         fraction = int(max_length / activity_length) + 1
         
         new_activity_data = np.tile(activity_data, (fraction, 1))
